@@ -1,2 +1,9 @@
 Drivers
 module/ssid_config.h
+
+# Eclipse
+.metadata
+.settings
+[Rr]elease
+[Dd]ebug
+.launch

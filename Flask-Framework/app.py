@@ -42,7 +42,7 @@ class lampStats(db.Model):
     action = db.Column(db.String(50), nullable=False)
 
     def __repr__(self):
-        return f"<LampStats LampID: {self.lamp_id}, Action: {self.action}>"
+        return f"<LampStats LampID: {self.lamp_id}, Action: {self.action}, Timestamp: {self.timestamp}>"
 
 
 class lampSchedule(db.Model):
@@ -62,15 +62,26 @@ class lampSchedule(db.Model):
 
 @app.route("/add_schedule", methods=["POST"])
 def add_schedule():
-    return
+    pass
+
+
+@app.route("/stats")
+def get_stats():
+    stats = lampStats.query.all()
+
+    return jsonify([{
+        "id": stat.id,
+        "lamp_id": stat.lamp_id,
+        "timestamp": stat.timestamp,
+        "action": stat.action
+    } for stat in stats])
+
 
 # Отримання розкладу за айді
-
-
 @app.route("/get_schedules/<int:lamp_id>", methods=["GET"])
 def get_schedules(lamp_id):
     schedules = lampSchedule.query.filter_by(lamp_id=lamp_id).all()
-    # schedules = db.session.
+
     return jsonify([{
         "id": schedule.id,
         "start_time": schedule.start_time.strftime('%H:%M:%S'),
@@ -103,7 +114,7 @@ def delete_schedule(schedule_id):
 @app.route("/update_lamp", methods=["PUT"])
 def update_lamp():
     data = request.get_json()  # Отримати JSON-запит
-    lamp = db.session.get(CURRENT_LAMP_ID)
+    lamp = db.session.get(lampConfig, CURRENT_LAMP_ID)
 
     if not lamp:
         return jsonify({"error": "Lamp not found"}), 404

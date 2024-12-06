@@ -6,14 +6,14 @@ from sqlalchemy import Column, null
 app = Flask(__name__)
 # config is the name of data base table
 # Configuring SQLALCHEMY parameters
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///configDB.sqlite3'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///dataTable.sqlite3'
 app.config['SQLALCHEMY_TRACK_MODAFICATIONS'] = False
 
 db = SQLAlchemy(app)
 # configure a database module
 
 
-class configDB(db.Model):
+class dataTable(db.Model):
     # Columns are information types and rows are the unique data
     # every row will have a unique "value" and this id is an integer (db.Integer) and activate that adressing feature (primary_key=True)
     id = db.Column(db.Integer, primary_key=True)
@@ -31,15 +31,15 @@ class configDB(db.Model):
 @app.route("/", methods=["GET", "POST"])
 def home():
     # Check if record with id=1 exists, and create it if not
-    if configDB.query.filter_by(id=1).first() is None:
-        default_value = configDB(id=1, Remote="Initial Value")
+    if dataTable.query.filter_by(id=1).first() is None:
+        default_value = dataTable(id=1, Remote="Initial Value")
         db.session.add(default_value)
         db.session.commit()
         print("Default record created with id=1")
 
     if request.method == "POST":
         value = request.form["obtained"]
-        newValue = configDB.query.filter_by(id=1).first()
+        newValue = dataTable.query.filter_by(id=1).first()
         if newValue:
             newValue.Remote = value
             print("After")
@@ -52,7 +52,7 @@ def home():
             return render_template("index.html", value="No data found")
 
     else:
-        memValue = configDB.query.filter_by(id=1).first()
+        memValue = dataTable.query.filter_by(id=1).first()
         if memValue:
             print(memValue.Remote)
             return render_template("index.html", value=memValue.Remote)
@@ -64,7 +64,7 @@ def home():
 @app.route("/jsonrequest")
 def jsonrequest():
     # Read data from the data space from a specific id and store the read row "id" and "remote" columns in
-    newValue = configDB.query.filter_by(id=1).first()
+    newValue = dataTable.query.filter_by(id=1).first()
     return jsonify({"ID": newValue.id, "Value": newValue.Remote})
 
 

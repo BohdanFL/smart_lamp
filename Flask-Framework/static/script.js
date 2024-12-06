@@ -14,6 +14,13 @@ document.addEventListener("DOMContentLoaded", () => {
   let dragging = false; // Чи тягне користувач повзунок
   let lastBrightness = 0; // Останнє значення яскравості
 
+    //Datepicker flatpicr
+  flatpicrConfig = {
+    enableTime: true,
+    dateFormat: "Y-m-d H:i",
+  }
+  flatpickr("input[type=datetime-local]", flatpicrConfig); //flatpicr
+
   // Функція оновлення кольорів
   function updateColors() {
     const buttonColor = `rgb(${255 - (brightness * 2.55)}, ${255 - (brightness * 2.55)}, ${255 - (brightness * 2.55)})`; // Колір кнопки

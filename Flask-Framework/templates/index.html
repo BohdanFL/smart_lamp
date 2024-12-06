@@ -5,6 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Draggable Circular Slider</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+
+<!--  flatpickr-->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+
 </head>
 <body>
   <!-- Шапка сайту з вкладками -->
@@ -15,7 +19,7 @@
       <div id="statisticTab" class="tab">Statistic</div>
     </div>
   </header>
-  
+
   <div class="container">
     <!-- Контент для Manual режиму -->
     <div id="manualMode" class="circular-slider">
@@ -37,18 +41,24 @@
       <button id="toggleButton" class="round-button">50%</button>
       <div id="sliderThumb" class="slider-thumb"></div>
     </div>
-    
+
     <!-- Контент для Programmatic режиму -->
     <div id="programmaticMode" class="programmatic-mode" style="display: none;">
       <!-- Програмний режим (поки що порожній) -->
+      <form>
+        <input class="form-control" type="datetime-local" placeholder="SelectDateTime">
+      </form>
     </div>
 
-        <!-- Контент для Programmatic режиму -->
+        <!-- Контент для statistic режиму -->
     <div id="statisticMode" class="statistic-mode" style="display: none;">
       <!-- Програмний режим (поки що порожній) -->
+
     </div>
   </div>
 
 <script src="{{ url_for('static', filename='script.js') }}"></script>
+<!--flatpickr-->
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 </body>
 </html>

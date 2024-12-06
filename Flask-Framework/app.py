@@ -42,7 +42,7 @@ class lampStats(db.Model):
     action = db.Column(db.String(50), nullable=False)
 
     def __repr__(self):
-        return f"<LampStats LampID: {self.lamp_id}, Action: {self.action}>"
+        return f"<LampStats LampID: {self.lamp_id}, Action: {self.action}, Timestamp: {self.timestamp}>"
 
 
 class lampSchedule(db.Model):
@@ -62,15 +62,26 @@ class lampSchedule(db.Model):
 
 @app.route("/add_schedule", methods=["POST"])
 def add_schedule():
-    return
+    pass
+
+
+@app.route("/stats")
+def get_stats():
+    stats = lampStats.query.all()
+
+    return jsonify([{
+        "id": stat.id,
+        "lamp_id": stat.lamp_id,
+        "timestamp": stat.timestamp,
+        "action": stat.action
+    } for stat in stats])
+
 
 # Отримання розкладу за айді
-
-
 @app.route("/get_schedules/<int:lamp_id>", methods=["GET"])
 def get_schedules(lamp_id):
     schedules = lampSchedule.query.filter_by(lamp_id=lamp_id).all()
-    # schedules = db.session.
+
     return jsonify([{
         "id": schedule.id,
         "start_time": schedule.start_time.strftime('%H:%M:%S'),
@@ -103,7 +114,7 @@ def delete_schedule(schedule_id):
 @app.route("/update_lamp", methods=["PUT"])
 def update_lamp():
     data = request.get_json()  # Отримати JSON-запит
-    lamp = db.session.get(CURRENT_LAMP_ID)
+    lamp = db.session.get(lampConfig, CURRENT_LAMP_ID)
 
     if not lamp:
         return jsonify({"error": "Lamp not found"}), 404
@@ -157,41 +168,12 @@ def home():
             print(stat)
     return render_template("index.html")
 
-    # if request.method == "POST":
-    #     value = request.form["obtained"]
-    #     newValue = lampConfig.query.filter_by(id=1).first()
-    #     if newValue:
-    #         newValue.Remote = value
-    #         print("After")
-    #         print("Remote Value: ", newValue.Remote)
-    #         print("Id: ", newValue.id)
-    #         db.session.commit()
-    #         return render_template("index.html", value=newValue.Remote)
-    #     else:
-    #         print("No record found with id=1")
-    #         return render_template("index.html", value="No data found")
-
-    # else:
-    #     memValue = lampConfig.query.filter_by(id=1).first()
-    #     if memValue:
-    #         print(memValue.Remote)
-    #         return render_template("index.html", value=memValue.Remote)
-    #     else:
-    #         print("No record found with id=1")
-    #         return render_template("index.html", value="No data found")
-
 
 @app.route("/jsonrequest")
 def jsonrequest():
     # Read data from the data space from a specific id and store the read row "id" and "remote" columns in
-    lamp = lampConfig.query.get(CURRENT_LAMP_ID)
+    lamp = lampConfig.query.get(lampConfig, CURRENT_LAMP_ID)
     return jsonify({"ID": lamp.id, "MODE": lamp.mode, "POWER_STATE": lamp.power_state, "BRIGHTNESS": lamp.brightness})
-
-
-@app.route("/")
-def test():
-    print("Hello from Test")
-    return render_template("index.html")
 
 
 if __name__ == "__main__":

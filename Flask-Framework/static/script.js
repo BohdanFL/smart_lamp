@@ -19,6 +19,28 @@ function updateLamp(powerState, brightness, mode, action) {
         .catch((error) => console.error("Error:", error));
 }
 
+function createSchedule(lamp_id) {
+    fetch(`/lamps/${lamp_id}/schedules`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+            days: ["Monday", "Wednesday", "Friday"],
+            time_ranges: [
+                { start_time: "08:00", end_time: "10:00" },
+                { start_time: "15:00", end_time: "18:00" },
+            ],
+        }),
+    })
+        .then((response) => response.json())
+        .then((data) => {
+            console.log("Response from server:", data);
+            // Можна виконати додаткові дії, наприклад, оновити UI
+        })
+        .catch((error) => console.error("Error:", error));
+}
+
 document.addEventListener("DOMContentLoaded", () => {
     const button = document.getElementById("toggleButton");
     const progressCircle = document.getElementById("progressCircle");
@@ -34,6 +56,8 @@ document.addEventListener("DOMContentLoaded", () => {
     let brightness = 0; // Початкова яскравість
     let dragging = false; // Чи тягне користувач повзунок
     let lastBrightness = 0; // Останнє значення яскравості
+
+    // createSchedule(1);
 
     // Функція оновлення кольорів
     function updateColors() {

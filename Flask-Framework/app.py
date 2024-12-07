@@ -206,6 +206,8 @@ def home():
 
         print("Default record created: ", new_lamp)
         print(new_stat)
+        print("Default record created: ", new_lamp)
+        print(new_stat)
     else:
         # Отримати лампочку з ID
         lamp = db.session.get(LampConfig, CURRENT_LAMP_ID)

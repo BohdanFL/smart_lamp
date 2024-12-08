@@ -48,6 +48,12 @@ function getLampState(brightness) {
     return { powerState, action };
 }
 
+function getLampState(brightness) {
+    const powerState = brightness === 0; // Увімкнення або вимкнення
+    const action = powerState ? "turned on" : "turned off";
+    return { powerState, action };
+}
+
 function createSchedule(lamp_id) {
     fetch(`/lamps/${lamp_id}/schedules`, {
         method: "POST",

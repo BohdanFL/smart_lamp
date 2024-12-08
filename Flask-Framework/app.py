@@ -12,6 +12,14 @@ class LampMode(Enum):
     AUTOMATIC = 1
     SCHEDULE = 2
 
+from enum import Enum
+
+
+class LampMode(Enum):
+    MANUAL = 0
+    AUTOMATIC = 1
+    SCHEDULE = 2
+
 
 CURRENT_LAMP_ID = 1
 
@@ -46,10 +54,13 @@ class LampStats(db.Model):
         'lamp_config.id'), nullable=False)  # Зовнішній ключ
     time = db.Column(db.DateTime, default=datetime.now, nullable=False)
     brightness = db.Column(db.Integer, nullable=True)
+    time = db.Column(db.DateTime, default=datetime.now, nullable=False)
+    brightness = db.Column(db.Integer, nullable=True)
     # Тип дії (on/off/brightness change)
     action = db.Column(db.String(50), nullable=False)
 
     def __repr__(self):
+        return f"<LampStats LampID: {self.lamp_id}, Action: {self.action}, Time: {self.time}>"
         return f"<LampStats LampID: {self.lamp_id}, Action: {self.action}, Time: {self.time}>"
 
 
@@ -98,6 +109,7 @@ class TimeRange(db.Model):
 @app.route('/lamps/<int:lamp_id>/schedules', methods=['POST'])
 def create_schedule(lamp_id):
     lamp = db.session.get(LampConfig, lamp_id)
+    data = request.get_json()
     data = request.get_json()
 
     # Створення нового розкладу
@@ -160,7 +172,10 @@ def delete_schedule(schedule_id):
 
 @app.route("/lamps/<int:lamp_id>", methods=["PUT"])
 def update_lamp(lamp_id):
+@app.route("/lamps/<int:lamp_id>", methods=["PUT"])
+def update_lamp(lamp_id):
     data = request.get_json()  # Отримати JSON-запит
+    lamp = db.session.get(LampConfig, lamp_id)
     lamp = db.session.get(LampConfig, lamp_id)
 
     if not lamp:
@@ -184,12 +199,22 @@ def update_lamp(lamp_id):
 
 # Отримання статистики
 @app.route("/stats", methods=["GET"])
+@app.route("/stats", methods=["GET"])
 def get_stats():
     stats = LampStats.query.all()
 
     return jsonify([{
         "id": stat.id,
         "lamp_id": stat.lamp_id,
+        "time": {
+                    "year": stat.time.year,
+                    "month": stat.time.month,
+                    "day": stat.time.day,
+                    "hour": stat.time.hour,
+                    "minute": stat.time.minute
+                    },
+        "action": stat.action,
+        "brightness": stat.brightness,
         "time": {
                     "year": stat.time.year,
                     "month": stat.time.month,
@@ -218,6 +243,22 @@ def update_stats(lamp_id):
 
 
 @app.route("/")
+# Додавання статистики
+@app.route("/stats/<int:lamp_id>", methods=["POST"])
+def update_stats(lamp_id):
+    lamp = db.session.get(LampConfig, lamp_id)
+    data = request.get_json()
+
+    action = data.get("action", "updated")
+    stat = LampStats(lamp_id=lamp.id, action=action,
+                     brightness=lamp.brightness)
+    db.session.add(stat)
+    db.session.commit()
+
+    return jsonify({'message': 'Stats created successfully'}), 200
+
+
+@app.route("/")
 def home():
     # Check if record exists, and create it if not
     if db.session.get(LampConfig, CURRENT_LAMP_ID) is None:
@@ -230,7 +271,6 @@ def home():
         db.session.commit()
 
         print("Default record created: ", new_lamp)
-        print(new_stat)
     else:
         # Отримати лампочку з ID
         lamp = db.session.get(LampConfig, CURRENT_LAMP_ID)

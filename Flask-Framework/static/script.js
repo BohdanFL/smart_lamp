@@ -4,6 +4,99 @@ const Mode = {
     SCHEDULE: 2,
 };
 
+const schedules = [
+    {
+        days: ["Monday", "Wednesday", "Friday"],
+        time_ranges: [
+            {
+                start_time: "08:00",
+                end_time: "10:00",
+            },
+            {
+                start_time: "12:00",
+                end_time: "14:00",
+            },
+            {
+                start_time: "16:00",
+                end_time: "18:00",
+            },
+        ],
+    },
+    {
+        days: ["Tuesday", "Thursday"],
+        time_ranges: [
+            {
+                start_time: "06:30",
+                end_time: "08:30",
+            },
+            {
+                start_time: "11:00",
+                end_time: "13:00",
+            },
+        ],
+    },
+    {
+        days: ["Monday", "Friday", "Saturday"],
+        time_ranges: [
+            {
+                start_time: "09:00",
+                end_time: "11:00",
+            },
+            {
+                start_time: "14:00",
+                end_time: "16:00",
+            },
+            {
+                start_time: "18:30",
+                end_time: "20:00",
+            },
+        ],
+    },
+    {
+        days: ["Wednesday"],
+        time_ranges: [
+            {
+                start_time: "07:00",
+                end_time: "09:00",
+            },
+            {
+                start_time: "10:30",
+                end_time: "12:30",
+            },
+        ],
+    },
+    {
+        days: ["Sunday"],
+        time_ranges: [
+            {
+                start_time: "09:00",
+                end_time: "11:00",
+            },
+            {
+                start_time: "12:00",
+                end_time: "15:00",
+            },
+            {
+                start_time: "17:00",
+                end_time: "19:00",
+            },
+            {
+                start_time: "21:00",
+                end_time: "23:00",
+            },
+        ],
+    },
+    {
+        days: ["Thursday", "Saturday"],
+        time_ranges: [
+            {
+                start_time: "08:00",
+                end_time: "10:00",
+            },
+        ],
+    },
+];
+
 function updateLamp(lamp_id, powerState, brightness, mode, action) {
     fetch(`/lamps/${lamp_id}`, {
         method: "PUT",
@@ -23,23 +116,6 @@ function updateLamp(lamp_id, powerState, brightness, mode, action) {
             // Можна виконати додаткові дії, наприклад, оновити UI
         })
         .catch((error) => console.error("Error:", error));
-
-    fetch(`/stats/${lamp_id}`, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-            brightness: brightness,
-            action: action,
-        }),
-    })
-        .then((response) => response.json())
-        .then((data) => {
-            console.log("Response from server:", data);
-            // Можна виконати додаткові дії, наприклад, оновити UI
-        })
-        .catch((error) => console.error("Error:", error));
 }
 
 function getLampState(brightness) {
@@ -48,25 +124,13 @@ function getLampState(brightness) {
     return { powerState, action };
 }
 
-function getLampState(brightness) {
-    const powerState = brightness === 0; // Увімкнення або вимкнення
-    const action = powerState ? "turned on" : "turned off";
-    return { powerState, action };
-}
-
-function createSchedule(lamp_id) {
+function createSchedule(lamp_id, schedule) {
     fetch(`/lamps/${lamp_id}/schedules`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-            days: ["Monday", "Wednesday", "Friday"],
-            time_ranges: [
-                { start_time: "08:00", end_time: "10:00" },
-                { start_time: "15:00", end_time: "18:00" },
-            ],
-        }),
+        body: JSON.stringify(schedule),
     })
         .then((response) => response.json())
         .then((data) => {
@@ -92,6 +156,10 @@ document.addEventListener("DOMContentLoaded", () => {
     let dragging = false; // Чи тягне користувач повзунок
     let lastBrightness = 0; // Останнє значення яскравості
     let currentLampId = 1;
+
+    // for (const schedule of schedules) {
+    //     createSchedule(currentLampId, schedule);
+    // }
 
     // Функція оновлення кольорів
     function updateColors() {
@@ -179,8 +247,8 @@ document.addEventListener("DOMContentLoaded", () => {
         dragging = false;
 
         // Надсилаємо оновлений стан на сервер
-        const { powerState, action } = getLampState(brightness);
-        updateLamp(currentLampId, powerState, brightness, Mode.MANUAL, action);
+        // const { powerState, action } = getLampState(brightness);
+        // updateLamp(currentLampId, powerState, brightness, Mode.MANUAL, action);
     });
 
     // Обробник події для кнопки

@@ -1,5 +1,104 @@
-function updateLamp(powerState, brightness, mode, action) {
-    fetch("/update_lamp", {
+const Mode = {
+    MANUAL: 0,
+    AUTOMATIC: 1,
+    SCHEDULE: 2,
+};
+
+const schedules = [
+    {
+        days: ["Monday", "Wednesday", "Friday"],
+        time_ranges: [
+            {
+                start_time: "08:00",
+                end_time: "10:00",
+            },
+            {
+                start_time: "12:00",
+                end_time: "14:00",
+            },
+            {
+                start_time: "16:00",
+                end_time: "18:00",
+            },
+        ],
+    },
+    {
+        days: ["Tuesday", "Thursday"],
+        time_ranges: [
+            {
+                start_time: "06:30",
+                end_time: "08:30",
+            },
+            {
+                start_time: "11:00",
+                end_time: "13:00",
+            },
+        ],
+    },
+    {
+        days: ["Monday", "Friday", "Saturday"],
+        time_ranges: [
+            {
+                start_time: "09:00",
+                end_time: "11:00",
+            },
+            {
+                start_time: "14:00",
+                end_time: "16:00",
+            },
+            {
+                start_time: "18:30",
+                end_time: "20:00",
+            },
+        ],
+    },
+    {
+        days: ["Wednesday"],
+        time_ranges: [
+            {
+                start_time: "07:00",
+                end_time: "09:00",
+            },
+            {
+                start_time: "10:30",
+                end_time: "12:30",
+            },
+        ],
+    },
+    {
+        days: ["Sunday"],
+        time_ranges: [
+            {
+                start_time: "09:00",
+                end_time: "11:00",
+            },
+            {
+                start_time: "12:00",
+                end_time: "15:00",
+            },
+            {
+                start_time: "17:00",
+                end_time: "19:00",
+            },
+            {
+                start_time: "21:00",
+                end_time: "23:00",
+            },
+        ],
+    },
+    {
+        days: ["Thursday", "Saturday"],
+        time_ranges: [
+            {
+                start_time: "08:00",
+                end_time: "10:00",
+            },
+        ],
+    },
+];
+
+function updateLamp(lamp_id, powerState, brightness, mode, action) {
+    fetch(`/lamps/${lamp_id}`, {
         method: "PUT",
         headers: {
             "Content-Type": "application/json",
@@ -19,19 +118,19 @@ function updateLamp(powerState, brightness, mode, action) {
         .catch((error) => console.error("Error:", error));
 }
 
-function createSchedule(lamp_id) {
+function getLampState(brightness) {
+    const powerState = brightness === 0; // Увімкнення або вимкнення
+    const action = powerState ? "turned on" : "turned off";
+    return { powerState, action };
+}
+
+function createSchedule(lamp_id, schedule) {
     fetch(`/lamps/${lamp_id}/schedules`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-            days: ["Monday", "Wednesday", "Friday"],
-            time_ranges: [
-                { start_time: "08:00", end_time: "10:00" },
-                { start_time: "15:00", end_time: "18:00" },
-            ],
-        }),
+        body: JSON.stringify(schedule),
     })
         .then((response) => response.json())
         .then((data) => {
@@ -61,6 +160,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let brightness = 0; // Початкова яскравість
     let dragging = false; // Чи тягне користувач повзунок
     let lastBrightness = 0; // Останнє значення яскравості
+    let currentLampId = 1;
 
     const today = new Date();
     const currentMonth = today.getMonth() + 1; // Місяці починаються з 0
@@ -241,9 +341,8 @@ document.addEventListener("DOMContentLoaded", () => {
         updateProgress(brightness); // Оновлюємо прогрес-бар та положення повзунка
 
         // Надсилаємо оновлений стан на сервер
-        const newPowerState = brightness === 0; // Увімкнення або вимкнення
-        const newAction = newPowerState ? "turned on" : "turned off";
-        updateLamp(newPowerState, brightness, 0, newAction);
+        const { powerState, action } = getLampState(brightness);
+        updateLamp(currentLampId, powerState, brightness, Mode.MANUAL, action);
     });
 
     // Функція для скидання активного стану у всіх вкладках

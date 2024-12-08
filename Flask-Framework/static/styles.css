@@ -1,190 +1,194 @@
-
 body {
-  font-family: Arial, sans-serif;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  margin: 0;
-  background-color: #f4f4f4;
-  padding-top: 60px;
-  overflow: hidden;
+    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    background-color: #f4f4f4;
+    padding-top: 60px;
+    overflow: hidden;
 }
 
 .container {
-  text-align: center;
-  position: relative;
+    text-align: center;
+    position: relative;
 }
 
 .circular-slider {
-  position: relative;
-  width: 200px;
-  height: 200px;
+    position: relative;
+    width: 200px;
+    height: 200px;
 }
 
 .round-button {
-  width: 150px;
-  height: 150px;
-  border-radius: 50%;
-  border: none;
-  background-color: #f0f0f0;
-  color: #333;
-  font-size: 32px;
-  font-weight: bold;
-  cursor: pointer;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  transition: background-color 0.3s, color 0.3s;
-  z-index: 2;
-  user-select: none;
-  -webkit-user-select: none;
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    border: none;
+    background-color: #f0f0f0;
+    color: #333;
+    font-size: 32px;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    transition: background-color 0.3s, color 0.3s;
+    z-index: 2;
+    user-select: none;
+    -webkit-user-select: none;
 }
 
 .round-button.dark {
-  background-color: #333;
-  color: #f0f0f0;
+    background-color: #333;
+    color: #f0f0f0;
 }
 
 .slider-ring {
-  position: absolute;
-  width: 300px; /* Діаметр кільця */
-  height: 300px;
-  border-width: 20px; 
-  top: 0;
-  left: 0;
+    position: absolute;
+    width: 300px; /* Діаметр кільця */
+    height: 300px;
+    border-width: 20px;
+    top: 0;
+    left: 0;
 }
 
 .slider-thumb {
-  width: 20px;
-  height: 20px;
-  background-color: #666;
-  border-radius: 50%;
-  position: absolute;
-  transform: translate(-50%, -50%);
-  cursor: pointer;
-  z-index: 3;
+    width: 20px;
+    height: 20px;
+    background-color: #666;
+    border-radius: 50%;
+    position: absolute;
+    transform: translate(-50%, -50%);
+    cursor: pointer;
+    z-index: 3;
 }
 
 /* Шапка сайту */
 header {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  background-color: rgba(0, 0, 0, 0); /* Встановлюємо той самий фон, як і в body */
-  padding: 10px 0;
-  z-index: 1000; /* Щоб шапка була завжди зверху */
-  display: flex;
-  justify-content: center;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background-color: rgba(
+        0,
+        0,
+        0,
+        0
+    ); /* Встановлюємо той самий фон, як і в body */
+    padding: 10px 0;
+    z-index: 1000; /* Щоб шапка була завжди зверху */
+    display: flex;
+    justify-content: center;
 }
 
 /* Стилі для вкладок */
 .tabs {
-  display: flex;
-  justify-content: center;
-  margin: 0;
+    display: flex;
+    justify-content: center;
+    margin: 0;
 }
 
 .tab {
-  padding: 10px 20px;
-  cursor: pointer;
-  font-weight: bold;
-  transition: color 0.3s;
+    padding: 10px 20px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: color 0.3s;
 }
 
 /* Стилі, коли текст має бути чорним */
 .tab.black {
-  font-size: 20px;
-  color: #000;
+    font-size: 20px;
+    color: #000;
 }
 
 /* Стилі, коли текст має бути білим */
 .tab.white {
-  font-size: 20px;
-  color: #fff;
+    font-size: 20px;
+    color: #fff;
 }
 
 .tab.active {
-  border-bottom: 2px solid;
-  transition: border-color 0.3s ease; /* Анімація переходу */
+    border-bottom: 2px solid;
+    transition: border-color 0.3s ease; /* Анімація переходу */
 }
 
 .tab:hover {
-  color: #555;
+    color: #555;
 }
 
 /* Основний контейнер контенту (без хедера) */
 .container {
-  display: flex;
-  justify-content: center;
-  padding: 20px;
+    display: flex;
+    justify-content: center;
+    padding: 20px;
 }
 
 .statistic-mode {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
 }
 /* Стилі для випадаючого меню */
 .month-selector {
-  display: flex;
-  justify-content: flex-start;
-  align-items: center;
-  margin-bottom: 20px;
-  padding-left: 30px;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-left: 30px;
 }
 
 .month-selector label {
-  margin-right: 10px;
-  font-size: 12px;
-  font-weight: bold;
+    margin-right: 10px;
+    font-size: 12px;
+    font-weight: bold;
 }
 
 #monthDropdown {
-  width: 65%;
-  padding: 5px;
-  font-size: 14px;
-  border-radius: 5px;
-  border: 1px solid #ccc;
+    width: 65%;
+    padding: 5px;
+    font-size: 14px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
 }
 .day-selector {
-  display: flex;
-  justify-content: flex-start;
-  align-items: center;
-  margin-bottom: 20px;
-  padding-left: 30px;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-left: 30px;
 }
 
 .day-selector label {
-  margin-right: 10px;
-  font-size: 12px;
-  font-weight: bold;
+    margin-right: 10px;
+    font-size: 12px;
+    font-weight: bold;
 }
 
 #dayDropdown {
-  width: 65%;
-  padding: 5px;
-  font-size: 14px;
-  border-radius: 5px;
-  border: 1px solid #ccc;
+    width: 65%;
+    padding: 5px;
+    font-size: 14px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
 }
 
 .charts-container {
-  display: flex;
-  flex-direction: column; /* Графіки в стовпчик */
-  gap: 50px; /* Відстань між графіками */
-  width: 100%; /* Ширина на всю вкладку */
-  background-color: #000; /* Чорний фон */
+    display: flex;
+    flex-direction: column; /* Графіки в стовпчик */
+    gap: 50px; /* Відстань між графіками */
+    width: 100%; /* Ширина на всю вкладку */
+    background-color: #000; /* Чорний фон */
 }
 .chart-container canvas {
-  background-color: transparent; /* Забезпечення прозорості для графіка */
+    background-color: transparent; /* Забезпечення прозорості для графіка */
 }
 
 .chart-container {
-  padding: 20px; /* Відступи всередині контейнера */
-  border-radius: 10px; /* Згладжені кути */
+    padding: 20px; /* Відступи всередині контейнера */
+    border-radius: 10px; /* Згладжені кути */
 }

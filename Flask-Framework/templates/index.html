@@ -1,176 +1,204 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Draggable Circular Slider</title>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Draggable Circular Slider</title>
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='scheduled_styles.css') }}">
-</head>
-<body>
-  <!-- Шапка сайту з вкладками -->
-  <header>
-    <div class="tabs">
-      <div id="manualTab" class="tab active">Manual</div>
-      <div id="programmaticTab" class="tab">Programmatic</div>
-      <div id="statisticTab" class="tab">Statistic</div>
-    </div>
-  </header>
-  
-  <div class="container">
-    <!-- Контент для Manual режиму -->
-    <div id="manualMode" class="circular-slider">
-      <svg class="slider-ring" width="200" height="200">
-        <circle cx="100" cy="100" r="90" fill="none" stroke="#ddd" stroke-width="10"></circle>
-        <circle
-          id="progressCircle"
-          cx="100"
-          cy="100"
-          r="90"
-          fill="none"
-          stroke="#666"
-          stroke-width="10"
-          stroke-dasharray="565.48"
-          stroke-dashoffset="565.48"
-          transform="rotate(-90, 100, 100)"
-        ></circle>
-      </svg>
-      <button id="toggleButton" class="round-button">50%</button>
-      <div id="sliderThumb" class="slider-thumb"></div>
-    </div>
-    
-    <!-- Контент для Programmatic режиму -->
-    <div id="programmaticMode" class="programmatic-mode" style="display: none;">
-      <!-- Програмний режим (поки що порожній) -->
+        <link rel="stylesheet" href="../static/styles.css" />
+        <link rel="stylesheet" href="../static/scheduled_styles.css" />
+    </head>
+    <body>
+        <!-- Шапка сайту з вкладками -->
+        <header>
+            <div class="tabs">
+                <div id="manualTab" class="tab active">Manual</div>
+                <div id="programmaticTab" class="tab">Programmatic</div>
+                <div id="statisticTab" class="tab">Statistic</div>
+            </div>
+        </header>
 
-        <div class="schedule_container">
-          <h1>Налаштування часу</h1>
+        <div class="container">
+            <!-- Контент для Manual режиму -->
+            <div id="manualMode" class="circular-slider">
+                <svg class="slider-ring" width="200" height="200">
+                    <circle
+                        cx="100"
+                        cy="100"
+                        r="90"
+                        fill="none"
+                        stroke="#ddd"
+                        stroke-width="10"></circle>
+                    <circle
+                        id="progressCircle"
+                        cx="100"
+                        cy="100"
+                        r="90"
+                        fill="none"
+                        stroke="#666"
+                        stroke-width="10"
+                        stroke-dasharray="565.48"
+                        stroke-dashoffset="565.48"
+                        transform="rotate(-90, 100, 100)"></circle>
+                </svg>
+                <button id="toggleButton" class="round-button">50%</button>
+                <div id="sliderThumb" class="slider-thumb"></div>
+            </div>
 
-          <button id="addButtonPanel" class="btn">Add</button>
+            <!-- Контент для Programmatic режиму -->
+            <div
+                id="programmaticMode"
+                class="programmatic-mode"
+                style="display: none">
+                <!-- Програмний режим (поки що порожній) -->
 
-          <!-- Панель додавання нового запису -->
-          <div class="addPanel">
-              <h2>Додати новий запис</h2>
-              <div class="form-group">
-                  <label for="blockName">Назва блоку:</label>
-                  <input type="text" id="blockName" class="input">
-              </div>
+                <div class="schedule_container">
+                    <h1>Налаштування часу</h1>
 
-              <div class="checkbox-group">
-                  <label class="checkbox-container">
-                      <input type="checkbox" id="monday">
-                      <span class="checkmark" data-day="monday"></span>
-                  </label>
-                  <label class="checkbox-container">
-                      <input type="checkbox" id="tuesday">
-                      <span class="checkmark" data-day="tuesday"></span>
-                  </label>
-                  <label class="checkbox-container">
-                      <input type="checkbox" id="wednesday">
-                      <span class="checkmark" data-day="wednesday"></span>
-                  </label>
-                  <label class="checkbox-container">
-                      <input type="checkbox" id="thursday">
-                      <span class="checkmark" data-day="thursday"></span>
-                  </label>
-                  <label class="checkbox-container">
-                      <input type="checkbox" id="friday">
-                      <span class="checkmark" data-day="friday"></span>
-                  </label>
-                  <label class="checkbox-container">
-                      <input type="checkbox" id="saturday">
-                      <span class="checkmark" data-day="saturday"></span>
-                  </label>
-                  <label class="checkbox-container">
-                      <input type="checkbox" id="sunday">
-                      <span class="checkmark" data-day="sunday"></span>
-                  </label>
-              </div>
+                    <button id="addButtonPanel" class="btn">Add</button>
 
-              <div class="form-group">
-                  <label for="startTime">З:</label>
-                  <input type="time" id="startTime" class="input">
-              </div>
+                    <!-- Панель додавання нового запису -->
+                    <div class="addPanel">
+                        <h2>Додати новий запис</h2>
+                        <div class="form-group">
+                            <label for="blockName">Назва блоку:</label>
+                            <input type="text" id="blockName" class="input" />
+                        </div>
 
-              <div class="form-group">
-                  <label for="endTime">По:</label>
-                  <input type="time" id="endTime" class="input">
-              </div>
+                        <div class="checkbox-group">
+                            <label class="checkbox-container">
+                                <input type="checkbox" id="monday" />
+                                <span
+                                    class="checkmark"
+                                    data-day="monday"></span>
+                            </label>
+                            <label class="checkbox-container">
+                                <input type="checkbox" id="tuesday" />
+                                <span
+                                    class="checkmark"
+                                    data-day="tuesday"></span>
+                            </label>
+                            <label class="checkbox-container">
+                                <input type="checkbox" id="wednesday" />
+                                <span
+                                    class="checkmark"
+                                    data-day="wednesday"></span>
+                            </label>
+                            <label class="checkbox-container">
+                                <input type="checkbox" id="thursday" />
+                                <span
+                                    class="checkmark"
+                                    data-day="thursday"></span>
+                            </label>
+                            <label class="checkbox-container">
+                                <input type="checkbox" id="friday" />
+                                <span
+                                    class="checkmark"
+                                    data-day="friday"></span>
+                            </label>
+                            <label class="checkbox-container">
+                                <input type="checkbox" id="saturday" />
+                                <span
+                                    class="checkmark"
+                                    data-day="saturday"></span>
+                            </label>
+                            <label class="checkbox-container">
+                                <input type="checkbox" id="sunday" />
+                                <span
+                                    class="checkmark"
+                                    data-day="sunday"></span>
+                            </label>
+                        </div>
 
-              <button id="addButton" class="btn">Confirm</button>
-              <button class="cancelBtn">Cancel</button>
-          </div>
+                        <div class="form-group">
+                            <label for="startTime">З:</label>
+                            <input type="time" id="startTime" class="input" />
+                        </div>
 
-          <!-- Панель зі списком записів -->
-          <div class="schedule">
-              <h2>Записи:</h2>
-              <ul id="scheduleList"></ul>
-          </div>
-      </div>
+                        <div class="form-group">
+                            <label for="endTime">По:</label>
+                            <input type="time" id="endTime" class="input" />
+                        </div>
 
-      <script src="scedule_script.js"></script>
+                        <button id="addButton" class="btn">Confirm</button>
+                        <button class="cancelBtn">Cancel</button>
+                    </div>
 
-    </div>
+                    <!-- Панель зі списком записів -->
+                    <div class="schedule">
+                        <h2>Записи:</h2>
+                        <ul id="scheduleList"></ul>
+                    </div>
+                </div>
+            </div>
 
-        <!-- Контент для Statistic режиму -->
+            <!-- Контент для Statistic режиму -->
 
-        <div id="statisticMode" class="statistic-mode" style="display: none;">
-           <!-- Вибір дня -->
-           <div class="day-selector">
-            <label for="dayDropdown">Choose a day:</label>
-            <select id="dayDropdown">
-              <!-- Дні від 1 до 31 -->
-              ${Array.from({ length: 31 }, (_, i) => `<option value="${i + 1}">${i + 1}</option>`).join("")}
-            </select>
-          </div>
+            <div
+                id="statisticMode"
+                class="statistic-mode"
+                style="display: none">
+                <!-- Вибір дня -->
+                <div class="day-selector">
+                    <label for="dayDropdown">Choose a day:</label>
+                    <select id="dayDropdown">
+                        <!-- Дні від 1 до 31 -->
+                        <!-- ${Array.from({ length: 31 }, (_, i) => `
+                        <option value="${i + 1}">${i + 1}</option>
+                        `).join("")} -->
+                    </select>
+                </div>
 
-          <!-- Графік для поточного дня -->
-          <div class="charts-container">
-          <div class="chart-container">
-            <canvas id="dailyEnergyChart" width="400" height="200"></canvas>
-          </div>
-          </div>
+                <!-- Графік для поточного дня -->
+                <div class="charts-container">
+                    <div class="chart-container">
+                        <canvas
+                            id="dailyEnergyChart"
+                            width="400"
+                            height="200"></canvas>
+                    </div>
+                </div>
 
+                <!-- Випадаюче меню для вибору місяця -->
+                <div class="month-selector">
+                    <label for="monthDropdown">Choose a month:</label>
+                    <select id="monthDropdown">
+                        <option value="1">January</option>
+                        <option value="2">February</option>
+                        <option value="3">March</option>
+                        <option value="4">April</option>
+                        <option value="5">May</option>
+                        <option value="6">June</option>
+                        <option value="7">July</option>
+                        <option value="8">August</option>
+                        <option value="9">September</option>
+                        <option value="10">October</option>
+                        <option value="11">November</option>
+                        <option value="12">December</option>
+                    </select>
+                </div>
 
-          <!-- Випадаюче меню для вибору місяця -->
-          <div class="month-selector">
-            <label for="monthDropdown">Choose a month:</label>
-            <select id="monthDropdown">
-              <option value="1">January</option>
-              <option value="2">February</option>
-              <option value="3">March</option>
-              <option value="4">April</option>
-              <option value="5">May</option>
-              <option value="6">June</option>
-              <option value="7">July</option>
-              <option value="8">August</option>
-              <option value="9">September</option>
-              <option value="10">October</option>
-              <option value="11">November</option>
-              <option value="12">December</option>
-            </select>
-          </div>
-        
-          <!-- Графік -->
-          <div class="charts-container">
-          <div class="chart-container">
-            <canvas id="energyChart" width="400" height="200"></canvas>
-          </div>
-          </div>
-        
-          <!-- Chart.js підключення -->
-          <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+                <!-- Графік -->
+                <div class="charts-container">
+                    <div class="chart-container">
+                        <canvas
+                            id="energyChart"
+                            width="400"
+                            height="200"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div
+                id="statisticMode"
+                class="statistic-mode"
+                style="display: none">
+                <!-- Статистичний режим (поки що порожній) -->
+            </div>
         </div>
-           
-
-    <div id="statisticMode" class="statistic-mode" style="display: none;">
-      <!-- Статистичний режим (поки що порожній) -->
-    </div>
-
-
-  </div>
-  <script src="{{ url_for('static', filename='scedule_script.js') }}"></script>
-  <script src="{{ url_for('static', filename='script.js') }}"></script>
-</body>
+        <!-- Chart.js підключення -->
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script src="../static/script.js"></script>
+        <script src="../static/schedule_script.js"></script>
+    </body>
 </html>

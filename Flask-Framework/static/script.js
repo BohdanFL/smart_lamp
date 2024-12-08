@@ -23,6 +23,23 @@ function updateLamp(lamp_id, powerState, brightness, mode, action) {
             // Можна виконати додаткові дії, наприклад, оновити UI
         })
         .catch((error) => console.error("Error:", error));
+
+    fetch(`/stats/${lamp_id}`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+            brightness: brightness,
+            action: action,
+        }),
+    })
+        .then((response) => response.json())
+        .then((data) => {
+            console.log("Response from server:", data);
+            // Можна виконати додаткові дії, наприклад, оновити UI
+        })
+        .catch((error) => console.error("Error:", error));
 }
 
 function getLampState(brightness) {

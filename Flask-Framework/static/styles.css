@@ -1,3 +1,4 @@
+
 body {
   font-family: Arial, sans-serif;
   display: flex;
@@ -7,6 +8,7 @@ body {
   margin: 0;
   background-color: #f4f4f4;
   padding-top: 60px;
+  overflow: hidden;
 }
 
 .container {
@@ -21,13 +23,13 @@ body {
 }
 
 .round-button {
-  width: 100px;
-  height: 100px;
+  width: 150px;
+  height: 150px;
   border-radius: 50%;
   border: none;
   background-color: #f0f0f0;
   color: #333;
-  font-size: 18px;
+  font-size: 32px;
   font-weight: bold;
   cursor: pointer;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -38,6 +40,7 @@ body {
   transition: background-color 0.3s, color 0.3s;
   z-index: 2;
   user-select: none;
+  -webkit-user-select: none;
 }
 
 .round-button.dark {
@@ -47,6 +50,9 @@ body {
 
 .slider-ring {
   position: absolute;
+  width: 300px; /* Діаметр кільця */
+  height: 300px;
+  border-width: 20px; 
   top: 0;
   left: 0;
 }
@@ -86,13 +92,24 @@ header {
   padding: 10px 20px;
   cursor: pointer;
   font-weight: bold;
-  color: #333;
   transition: color 0.3s;
 }
 
-.tab.active {
+/* Стилі, коли текст має бути чорним */
+.tab.black {
+  font-size: 20px;
   color: #000;
-  border-bottom: 2px solid #333; /* Підкреслення активної вкладки */
+}
+
+/* Стилі, коли текст має бути білим */
+.tab.white {
+  font-size: 20px;
+  color: #fff;
+}
+
+.tab.active {
+  border-bottom: 2px solid;
+  transition: border-color 0.3s ease; /* Анімація переходу */
 }
 
 .tab:hover {
@@ -104,4 +121,70 @@ header {
   display: flex;
   justify-content: center;
   padding: 20px;
+}
+
+.statistic-mode {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+}
+/* Стилі для випадаючого меню */
+.month-selector {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-left: 30px;
+}
+
+.month-selector label {
+  margin-right: 10px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+#monthDropdown {
+  width: 65%;
+  padding: 5px;
+  font-size: 14px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+.day-selector {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-left: 30px;
+}
+
+.day-selector label {
+  margin-right: 10px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+#dayDropdown {
+  width: 65%;
+  padding: 5px;
+  font-size: 14px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+
+.charts-container {
+  display: flex;
+  flex-direction: column; /* Графіки в стовпчик */
+  gap: 50px; /* Відстань між графіками */
+  width: 100%; /* Ширина на всю вкладку */
+  background-color: #000; /* Чорний фон */
+}
+.chart-container canvas {
+  background-color: transparent; /* Забезпечення прозорості для графіка */
+}
+
+.chart-container {
+  padding: 20px; /* Відступи всередині контейнера */
+  border-radius: 10px; /* Згладжені кути */
 }

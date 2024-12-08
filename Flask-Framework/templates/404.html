@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <!-- <link rel="stylesheet" href="../static/styles.css" /> -->
+        <title>404 — Лампочка перегоріла</title>
+        <style>
+            * {
+                padding: 0;
+                margin: 0;
+                box-sizing: border-box;
+            }
+            body {
+                font-family: "Arial", sans-serif;
+                text-align: center;
+                background-color: #f0f8ff;
+                /* background-image: url("../static/lamps.jpg");
+                background-repeat: no-repeat;
+                background-position: center;
+                background-size: cover;
+                background-attachment: fixed; */
+                color: #333;
+                padding: 10px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                height: 100vh;
+                width: 100vw;
+            }
+            h1 {
+                font-size: 3em;
+                margin-bottom: 20px;
+            }
+            p {
+                font-size: 1.2em;
+                margin: 15px 0;
+            }
+            img {
+                max-width: 100px;
+            }
+            a {
+                text-decoration: none;
+                color: #007bff;
+                font-weight: bold;
+            }
+            a:hover {
+                text-decoration: underline;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container-404">
+            <h1>404 💡</h1>
+            <p>Лампочка перегоріла, і ви зайшли в темний куток інтернету.</p>
+            <img src="../static/broken_lamp.png" alt="Перегоріла лампочка" />
+            <p>
+                Може, повернутися <a href="/">на головну сторінку</a>,
+                <br />поки ми не перезавантажили мікроконтролер?
+            </p>
+        </div>
+    </body>
+</html>

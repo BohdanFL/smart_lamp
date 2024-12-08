@@ -1,3 +1,46 @@
+function updateLamp(powerState, brightness, mode, action) {
+    fetch("/update_lamp", {
+        method: "PUT",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+            power_state: powerState,
+            brightness: brightness,
+            mode: mode,
+            action: action,
+        }),
+    })
+        .then((response) => response.json())
+        .then((data) => {
+            console.log("Response from server:", data);
+            // Можна виконати додаткові дії, наприклад, оновити UI
+        })
+        .catch((error) => console.error("Error:", error));
+}
+
+function createSchedule(lamp_id) {
+    fetch(`/lamps/${lamp_id}/schedules`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+            days: ["Monday", "Wednesday", "Friday"],
+            time_ranges: [
+                { start_time: "08:00", end_time: "10:00" },
+                { start_time: "15:00", end_time: "18:00" },
+            ],
+        }),
+    })
+        .then((response) => response.json())
+        .then((data) => {
+            console.log("Response from server:", data);
+            // Можна виконати додаткові дії, наприклад, оновити UI
+        })
+        .catch((error) => console.error("Error:", error));
+}
+
 document.addEventListener("DOMContentLoaded", () => {
     const button = document.getElementById("toggleButton");
     const progressCircle = document.getElementById("progressCircle");
@@ -119,12 +162,34 @@ document.addEventListener("DOMContentLoaded", () => {
             button.textContent = `${brightness}%`;
         }
     }
+    // Функція оновлення тексту кнопки
+    function updateButtonText() {
+        if (brightness === 0) {
+            button.textContent = "ON";
+        } else if (brightness === 100) {
+            button.textContent = "OFF";
+        } else {
+            button.textContent = `${brightness}%`;
+        }
+    }
 
     // Функція оновлення прогресу
     function updateProgress(value) {
         const offset = circumference - (value / 100) * circumference;
         progressCircle.style.strokeDashoffset = offset;
+    // Функція оновлення прогресу
+    function updateProgress(value) {
+        const offset = circumference - (value / 100) * circumference;
+        progressCircle.style.strokeDashoffset = offset;
 
+        // Обчислення нового положення ручки
+        const angle = (value / 100) * 360;
+        const radian = (angle - 90) * (Math.PI / 180);
+        const x = 100 + 90 * Math.cos(radian);
+        const y = 100 + 90 * Math.sin(radian);
+        thumb.style.left = `${x}px`;
+        thumb.style.top = `${y}px`;
+    }
         // Обчислення нового положення ручки
         const angle = (value / 100) * 360;
         const radian = (angle - 90) * (Math.PI / 180);
@@ -199,6 +264,24 @@ document.addEventListener("DOMContentLoaded", () => {
         updateColors(); // Оновлюємо кольори кнопки та фону
         updateButtonText(); // Оновлюємо текст кнопки
         updateProgress(brightness); // Оновлюємо прогрес-бар та положення повзунка
+
+        // Надсилаємо оновлений стан на сервер
+        const newPowerState = brightness === 0; // Увімкнення або вимкнення
+        const newAction = newPowerState ? "turned on" : "turned off";
+        updateLamp(newPowerState, brightness, 0, newAction);
+    });
+    // Обробник події для кнопки
+    button.addEventListener("click", () => {
+        if (brightness === 0) {
+            // Якщо кнопка в режимі "OFF", переключаємо на "ON" і встановлюємо яскравість на 100
+            brightness = 100;
+        } else {
+            // Якщо кнопка в режимі "ON", переключаємо на "OFF" і скидаємо яскравість на 0
+            brightness = 0;
+        }
+        updateColors(); // Оновлюємо кольори кнопки та фону
+        updateButtonText(); // Оновлюємо текст кнопки
+        updateProgress(brightness); // Оновлюємо прогрес-бар та положення повзунка
     });
 
     // Функція для скидання активного стану у всіх вкладках
@@ -237,6 +320,10 @@ document.addEventListener("DOMContentLoaded", () => {
         createChart();
     });
 
+    // Початковий стан
+    updateColors();
+    updateButtonText();
+    updateProgress(brightness);
     // Початковий стан
     updateColors();
     updateButtonText();

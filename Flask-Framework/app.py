@@ -4,6 +4,14 @@ from flask_sqlalchemy import SQLAlchemy
 from requests import session
 from sqlalchemy import Column, null
 from datetime import datetime, time
+from enum import Enum
+
+
+class LampMode(Enum):
+    MANUAL = 0
+    AUTOMATIC = 1
+    SCHEDULE = 2
+
 
 CURRENT_LAMP_ID = 1
 
@@ -25,6 +33,9 @@ class LampConfig(db.Model):
     # Зв'язок із таблицею статистики і розкладу
     stats = db.relationship('LampStats', backref='lamp', lazy=True)
     schedules = db.relationship('LampSchedule', backref='lamp', lazy=True)
+    # Зв'язок із таблицею статистики і розкладу
+    stats = db.relationship('LampStats', backref='lamp', lazy=True)
+    schedules = db.relationship('LampSchedule', backref='lamp', lazy=True)
 
     def __repr__(self):
         return f"<LampConfig State: {'On' if self.power_state else 'Off'}, Brightness: {self.brightness}, Mode: {self.mode}>"
@@ -36,12 +47,13 @@ class LampStats(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     lamp_id = db.Column(db.Integer, db.ForeignKey(
         'lamp_config.id'), nullable=False)  # Зовнішній ключ
-    timestamp = db.Column(db.DateTime, default=datetime.now, nullable=False)
+    time = db.Column(db.DateTime, default=datetime.now, nullable=False)
+    brightness = db.Column(db.Integer, nullable=True)
     # Тип дії (on/off/brightness change)
     action = db.Column(db.String(50), nullable=False)
 
     def __repr__(self):
-        return f"<LampStats LampID: {self.lamp_id}, Action: {self.action}, Timestamp: {self.timestamp}>"
+        return f"<LampStats LampID: {self.lamp_id}, Action: {self.action}, Time: {self.time}>"
 
 
 # Модель розкладу
@@ -49,8 +61,45 @@ class LampSchedule(db.Model):
     __tablename__ = 'lamp_schedules'
 
     id = db.Column(db.Integer, primary_key=True)
+# Модель розкладу
+
+
+class LampSchedule(db.Model):
+    __tablename__ = 'lamp_schedules'
+
+    id = db.Column(db.Integer, primary_key=True)
     lamp_id = db.Column(db.Integer, db.ForeignKey(
         'lamp_config.id'), nullable=False)
+    name = db.Column(db.String, nullable=False)
+    # Зв'язок із днями розкладу
+    days = db.relationship('ScheduleDay', backref='schedule',
+                           cascade='all, delete-orphan', lazy=True)
+    # Зв'язок із діапазонами часу
+    time_ranges = db.relationship(
+        'TimeRange', backref='schedule', cascade='all, delete-orphan', lazy=True)
+
+    def __repr__(self):
+        return f"<LampSchedule ID: {self.id}, LampID: {self.lamp_id}, Name: {self.name}, Days: {self.days}, TimeRanges: {self.time_ranges}>"
+
+
+# Модель днів розкладу
+class ScheduleDay(db.Model):
+    __tablename__ = 'schedule_days'
+
+    id = db.Column(db.Integer, primary_key=True)
+    schedule_id = db.Column(db.Integer, db.ForeignKey(
+        'lamp_schedules.id'), nullable=False)
+    # Наприклад: 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sun', 'Sat'
+    day_of_week = db.Column(db.String, nullable=False)
+
+
+# Модель діапазонів часу
+class TimeRange(db.Model):
+    __tablename__ = 'time_ranges'
+
+    id = db.Column(db.Integer, primary_key=True)
+    schedule_id = db.Column(db.Integer, db.ForeignKey(
+        'lamp_schedules.id'), nullable=False)
     name = db.Column(db.String, nullable=False)
     # Зв'язок із днями розкладу
     days = db.relationship('ScheduleDay', backref='schedule',
@@ -89,7 +138,7 @@ class TimeRange(db.Model):
 @app.route('/lamps/<int:lamp_id>/schedules', methods=['POST'])
 def create_schedule(lamp_id):
     lamp = db.session.get(LampConfig, lamp_id)
-    data = request.json
+    data = request.get_json()
 
     # Створення нового розкладу
     schedule = LampSchedule(lamp=lamp)
@@ -118,10 +167,29 @@ def create_schedule(lamp_id):
 
 # Отримання розкладу за айді
 @app.route('/lamps/<int:lamp_id>/schedules', methods=['GET'])
+@app.route('/lamps/<int:lamp_id>/schedules', methods=['GET'])
 def get_schedules(lamp_id):
     lamp = db.session.get(LampConfig, lamp_id)
     schedules = LampSchedule.query.filter_by(lamp_id=lamp.id).all()
+    lamp = db.session.get(LampConfig, lamp_id)
+    schedules = LampSchedule.query.filter_by(lamp_id=lamp.id).all()
 
+    result = []
+    for schedule in schedules:
+        days = [day.day_of_week for day in schedule.days]
+        time_ranges = [
+            {
+                'start_time': tr.start_time.strftime('%H:%M'),
+                'end_time': tr.end_time.strftime('%H:%M')
+            } for tr in schedule.time_ranges
+        ]
+        result.append({
+            'schedule_id': schedule.id,
+            'days': days,
+            'time_ranges': time_ranges
+        })
+
+    return jsonify(result)
     result = []
     for schedule in schedules:
         days = [day.day_of_week for day in schedule.days]
@@ -142,17 +210,22 @@ def get_schedules(lamp_id):
 
 # Видалення розкладу за айді
 @app.route('/schedules/<int:schedule_id>', methods=['DELETE'])
+@app.route('/schedules/<int:schedule_id>', methods=['DELETE'])
 def delete_schedule(schedule_id):
+    schedule = db.session.get(LampSchedule, schedule_id)
+    db.session.delete(schedule)
+    db.session.commit()
+    return jsonify({'message': 'Schedule deleted successfully'}), 200
     schedule = db.session.get(LampSchedule, schedule_id)
     db.session.delete(schedule)
     db.session.commit()
     return jsonify({'message': 'Schedule deleted successfully'}), 200
 
 
-@app.route("/update_lamp", methods=["PUT"])
-def update_lamp():
+@app.route("/lamps/<int:lamp_id>", methods=["PUT"])
+def update_lamp(lamp_id):
     data = request.get_json()  # Отримати JSON-запит
-    lamp = db.session.get(LampConfig, CURRENT_LAMP_ID)
+    lamp = db.session.get(LampConfig, lamp_id)
 
     if not lamp:
         return jsonify({"error": "Lamp not found"}), 404
@@ -165,12 +238,6 @@ def update_lamp():
     # Збереження змін у базі даних
     db.session.commit()
 
-    # Додавання статистики
-    action = data.get("action", "updated")
-    new_stat = LampStats(lamp_id=lamp.id, action=action)
-    db.session.add(new_stat)
-    db.session.commit()
-
     return jsonify({"message": "Lamp updated successfully", "lamp": {
         "id": lamp.id,
         "power_state": lamp.power_state,
@@ -180,26 +247,51 @@ def update_lamp():
 
 
 # Отримання статистики
-@app.route("/stats")
+@app.route("/stats", methods=["GET"])
 def get_stats():
     stats = LampStats.query.all()
 
     return jsonify([{
         "id": stat.id,
         "lamp_id": stat.lamp_id,
-        "timestamp": stat.timestamp,
-        "action": stat.action
+        "time": {
+                    "year": stat.time.year,
+                    "month": stat.time.month,
+                    "day": stat.time.day,
+                    "hour": stat.time.hour,
+                    "minute": stat.time.minute
+                    },
+        "action": stat.action,
+        "brightness": stat.brightness,
     } for stat in stats])
 
 
-@app.route("/", methods=["GET", "POST"])
+# Додавання статистики
+@app.route("/stats/<int:lamp_id>", methods=["POST"])
+def update_stats(lamp_id):
+    lamp = db.session.get(LampConfig, lamp_id)
+    data = request.get_json()
+
+    action = data.get("action", "updated")
+    stat = LampStats(lamp_id=lamp.id, action=action,
+                     brightness=lamp.brightness)
+    db.session.add(stat)
+    db.session.commit()
+
+    return jsonify({'message': 'Stats created successfully'}), 200
+
+
+@app.route("/")
 def home():
     # Check if record exists, and create it if not
+    if db.session.get(LampConfig, CURRENT_LAMP_ID) is None:
+        new_lamp = LampConfig(power_state=False, mode=0, brightness=50)
     if db.session.get(LampConfig, CURRENT_LAMP_ID) is None:
         new_lamp = LampConfig(power_state=False, mode=0, brightness=50)
         db.session.add(new_lamp)
         db.session.commit()
 
+        new_stat = LampStats(lamp_id=new_lamp.id, action="turned on")
         new_stat = LampStats(lamp_id=new_lamp.id, action="turned on")
         db.session.add(new_stat)
         db.session.commit()
@@ -211,6 +303,7 @@ def home():
     else:
         # Отримати лампочку з ID
         lamp = db.session.get(LampConfig, CURRENT_LAMP_ID)
+        lamp = db.session.get(LampConfig, CURRENT_LAMP_ID)
         print(lamp)
         for stat in lamp.stats:
             print(stat)
@@ -221,7 +314,14 @@ def home():
 def jsonrequest():
     # Read data from the data space from a specific id and store the read row "id" and "remote" columns in
     lamp = db.session.get(LampConfig, CURRENT_LAMP_ID)
+    lamp = db.session.get(LampConfig, CURRENT_LAMP_ID)
     return jsonify({"ID": lamp.id, "MODE": lamp.mode, "POWER_STATE": lamp.power_state, "BRIGHTNESS": lamp.brightness})
+
+
+# Сторінка для невалідних URL
+@app.errorhandler(404)
+def page_not_found(e):
+    return render_template('404.html'), 404
 
 
 # Сторінка для невалідних URL
@@ -233,4 +333,5 @@ def page_not_found(e):
 if __name__ == "__main__":
     with app.app_context():
         db.create_all()
+    app.run(host="localhost", debug=True)
     app.run(host="localhost", debug=True)

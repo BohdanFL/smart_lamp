@@ -1,5 +1,11 @@
-function updateLamp(powerState, brightness, mode, action) {
-    fetch("/update_lamp", {
+const Mode = {
+    MANUAL: 0,
+    AUTOMATIC: 1,
+    SCHEDULE: 2,
+};
+
+function updateLamp(lamp_id, powerState, brightness, mode, action) {
+    fetch(`/lamps/${lamp_id}`, {
         method: "PUT",
         headers: {
             "Content-Type": "application/json",
@@ -17,6 +23,12 @@ function updateLamp(powerState, brightness, mode, action) {
             // Можна виконати додаткові дії, наприклад, оновити UI
         })
         .catch((error) => console.error("Error:", error));
+}
+
+function getLampState(brightness) {
+    const powerState = brightness === 0; // Увімкнення або вимкнення
+    const action = powerState ? "turned on" : "turned off";
+    return { powerState, action };
 }
 
 function createSchedule(lamp_id) {
@@ -56,8 +68,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let brightness = 0; // Початкова яскравість
     let dragging = false; // Чи тягне користувач повзунок
     let lastBrightness = 0; // Останнє значення яскравості
-
-    // createSchedule(1);
+    let currentLampId = 1;
 
     // Функція оновлення кольорів
     function updateColors() {
@@ -143,6 +154,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     document.addEventListener("mouseup", () => {
         dragging = false;
+
+        // Надсилаємо оновлений стан на сервер
+        const { powerState, action } = getLampState(brightness);
+        updateLamp(currentLampId, powerState, brightness, Mode.MANUAL, action);
     });
 
     // Обробник події для кнопки
@@ -159,9 +174,8 @@ document.addEventListener("DOMContentLoaded", () => {
         updateProgress(brightness); // Оновлюємо прогрес-бар та положення повзунка
 
         // Надсилаємо оновлений стан на сервер
-        const newPowerState = brightness === 0; // Увімкнення або вимкнення
-        const newAction = newPowerState ? "turned on" : "turned off";
-        updateLamp(newPowerState, brightness, 0, newAction);
+        const { powerState, action } = getLampState(brightness);
+        updateLamp(currentLampId, powerState, brightness, Mode.MANUAL, action);
     });
 
     // Перемикання між режимами

@@ -4,99 +4,6 @@ const Mode = {
     SCHEDULE: 2,
 };
 
-const schedules = [
-    {
-        days: ["Monday", "Wednesday", "Friday"],
-        time_ranges: [
-            {
-                start_time: "08:00",
-                end_time: "10:00",
-            },
-            {
-                start_time: "12:00",
-                end_time: "14:00",
-            },
-            {
-                start_time: "16:00",
-                end_time: "18:00",
-            },
-        ],
-    },
-    {
-        days: ["Tuesday", "Thursday"],
-        time_ranges: [
-            {
-                start_time: "06:30",
-                end_time: "08:30",
-            },
-            {
-                start_time: "11:00",
-                end_time: "13:00",
-            },
-        ],
-    },
-    {
-        days: ["Monday", "Friday", "Saturday"],
-        time_ranges: [
-            {
-                start_time: "09:00",
-                end_time: "11:00",
-            },
-            {
-                start_time: "14:00",
-                end_time: "16:00",
-            },
-            {
-                start_time: "18:30",
-                end_time: "20:00",
-            },
-        ],
-    },
-    {
-        days: ["Wednesday"],
-        time_ranges: [
-            {
-                start_time: "07:00",
-                end_time: "09:00",
-            },
-            {
-                start_time: "10:30",
-                end_time: "12:30",
-            },
-        ],
-    },
-    {
-        days: ["Sunday"],
-        time_ranges: [
-            {
-                start_time: "09:00",
-                end_time: "11:00",
-            },
-            {
-                start_time: "12:00",
-                end_time: "15:00",
-            },
-            {
-                start_time: "17:00",
-                end_time: "19:00",
-            },
-            {
-                start_time: "21:00",
-                end_time: "23:00",
-            },
-        ],
-    },
-    {
-        days: ["Thursday", "Saturday"],
-        time_ranges: [
-            {
-                start_time: "08:00",
-                end_time: "10:00",
-            },
-        ],
-    },
-];
-
 function updateLamp(lamp_id, powerState, brightness, mode, action) {
     fetch(`/lamps/${lamp_id}`, {
         method: "PUT",
@@ -118,9 +25,23 @@ function updateLamp(lamp_id, powerState, brightness, mode, action) {
         .catch((error) => console.error("Error:", error));
 }
 
+async function getStatsData() {
+    try {
+        const response = await fetch("/stats");
+        if (!response.ok) {
+            throw new Error("Network response was not ok");
+        }
+        const data = await response.json();
+        console.log("Response from server:", data);
+        return data;
+    } catch (error) {
+        console.error("Error:", error);
+    }
+}
+
 function getLampState(brightness) {
     const powerState = brightness === 0; // Увімкнення або вимкнення
-    const action = powerState ? "turned on" : "turned off";
+    const action = powerState ? "turn_on" : "turn_off";
     return { powerState, action };
 }
 
@@ -391,9 +312,7 @@ let energyChartInstance; // Змінна для зберігання інста�
 
 async function createChart(selectedMonth = null) {
     try {
-        const jsonDataPath = "/static/data.json";
-        const response = await fetch(jsonDataPath); // Перевірте шлях!
-        const data = await response.json();
+        const data = await getStatsData();
 
         const currentDate = new Date();
         const currentMonth =
@@ -548,8 +467,9 @@ let dailyEnergyChartInstance; // Інстанс для денного графі
 
 async function createDailyChart(selectedDate = null) {
     try {
-        const response = await fetch("/static/data.json"); // Перевірте шлях!
-        const data = await response.json();
+        // const response = await fetch("/static/data.json"); // Перевірте шлях!
+        // const data = await response.json();
+        const data = await getStatsData();
 
         const currentDate =
             selectedDate || new Date().toISOString().split("T")[0]; // Формат YYYY-MM-DD

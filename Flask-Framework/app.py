@@ -24,8 +24,6 @@ db = SQLAlchemy(app)
 
 # Модель конфігурації лампочок
 class LampConfig(db.Model):
-# Модель конфігурації лампочок
-class LampConfig(db.Model):
     __tablename__ = 'lamp_config'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     power_state = db.Column(db.Boolean, default=False, nullable=False)
@@ -43,8 +41,6 @@ class LampConfig(db.Model):
         return f"<LampConfig State: {'On' if self.power_state else 'Off'}, Brightness: {self.brightness}, Mode: {self.mode}>"
 
 
-# Модель статистики
-class LampStats(db.Model):
 # Модель статистики
 class LampStats(db.Model):
     __tablename__ = 'lamp_stats'
@@ -66,6 +62,8 @@ class LampSchedule(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
 # Модель розкладу
+
+
 class LampSchedule(db.Model):
     __tablename__ = 'lamp_schedules'
 

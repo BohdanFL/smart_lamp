@@ -76,9 +76,6 @@ document.addEventListener("DOMContentLoaded", () => {
         // Тут реалізуйте вашу логіку для завантаження графіка
     }
 
-    monthDropdown.value = currentMonth;
-    dayDropdown.value = currentDay;
-
     // Викликати функцію для завантаження графіка
     loadChart(currentMonth, currentDay);
 
@@ -162,34 +159,12 @@ document.addEventListener("DOMContentLoaded", () => {
             button.textContent = `${brightness}%`;
         }
     }
-    // Функція оновлення тексту кнопки
-    function updateButtonText() {
-        if (brightness === 0) {
-            button.textContent = "ON";
-        } else if (brightness === 100) {
-            button.textContent = "OFF";
-        } else {
-            button.textContent = `${brightness}%`;
-        }
-    }
 
     // Функція оновлення прогресу
     function updateProgress(value) {
         const offset = circumference - (value / 100) * circumference;
         progressCircle.style.strokeDashoffset = offset;
-    // Функція оновлення прогресу
-    function updateProgress(value) {
-        const offset = circumference - (value / 100) * circumference;
-        progressCircle.style.strokeDashoffset = offset;
 
-        // Обчислення нового положення ручки
-        const angle = (value / 100) * 360;
-        const radian = (angle - 90) * (Math.PI / 180);
-        const x = 100 + 90 * Math.cos(radian);
-        const y = 100 + 90 * Math.sin(radian);
-        thumb.style.left = `${x}px`;
-        thumb.style.top = `${y}px`;
-    }
         // Обчислення нового положення ручки
         const angle = (value / 100) * 360;
         const radian = (angle - 90) * (Math.PI / 180);
@@ -270,19 +245,6 @@ document.addEventListener("DOMContentLoaded", () => {
         const newAction = newPowerState ? "turned on" : "turned off";
         updateLamp(newPowerState, brightness, 0, newAction);
     });
-    // Обробник події для кнопки
-    button.addEventListener("click", () => {
-        if (brightness === 0) {
-            // Якщо кнопка в режимі "OFF", переключаємо на "ON" і встановлюємо яскравість на 100
-            brightness = 100;
-        } else {
-            // Якщо кнопка в режимі "ON", переключаємо на "OFF" і скидаємо яскравість на 0
-            brightness = 0;
-        }
-        updateColors(); // Оновлюємо кольори кнопки та фону
-        updateButtonText(); // Оновлюємо текст кнопки
-        updateProgress(brightness); // Оновлюємо прогрес-бар та положення повзунка
-    });
 
     // Функція для скидання активного стану у всіх вкладках
     function resetActiveTabs() {
@@ -320,10 +282,6 @@ document.addEventListener("DOMContentLoaded", () => {
         createChart();
     });
 
-    // Початковий стан
-    updateColors();
-    updateButtonText();
-    updateProgress(brightness);
     // Початковий стан
     updateColors();
     updateButtonText();
@@ -487,21 +445,7 @@ function populateMonthDropdown() {
     }
 }
 
-// Обробник зміни місяця
-document.getElementById("monthDropdown").addEventListener("change", (event) => {
-    createChart(event.target.value); // Перевіряємо, який місяць вибрав користувач
-});
-
-
-// Ініціалізація
-document.addEventListener("DOMContentLoaded", () => {
-    populateMonthDropdown(); // Створюємо меню місяців
-    createChart(); // Відображаємо графік за замовчуванням
-});
-
-
 let dailyEnergyChartInstance; // Інстанс для денного графіка
-
 
 async function createDailyChart(selectedDate = null) {
     try {
@@ -645,7 +589,7 @@ function populateDayDropdown(selectedMonth = null) {
         currentMonth.split("-")[1],
         0
     ).getDate(); // Кількість днів у місяці
-    
+
     for (let day = 1; day <= daysInMonth; day++) {
         const normalizedDay = day.toString().padStart(2, "0");
         const optionValue = `${currentMonth}-${normalizedDay}`;
@@ -673,6 +617,7 @@ document.getElementById("dayDropdown").addEventListener("change", (event) => {
     createDailyChart(event.target.value); // Створення графіка для обраного дня
 });
 
+// Ініціалізація
 document.addEventListener("DOMContentLoaded", () => {
     populateMonthDropdown(); // Створюємо меню місяців
     createChart(); // Відображаємо місячний графік за замовчуванням

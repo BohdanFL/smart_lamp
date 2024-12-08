@@ -4,6 +4,14 @@ from flask_sqlalchemy import SQLAlchemy
 from requests import session
 from sqlalchemy import Column, null
 from datetime import datetime, time
+from enum import Enum
+
+
+class LampMode(Enum):
+    MANUAL = 0
+    AUTOMATIC = 1
+    SCHEDULE = 2
+
 
 CURRENT_LAMP_ID = 1
 
@@ -36,12 +44,13 @@ class LampStats(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     lamp_id = db.Column(db.Integer, db.ForeignKey(
         'lamp_config.id'), nullable=False)  # Зовнішній ключ
-    timestamp = db.Column(db.DateTime, default=datetime.now, nullable=False)
+    time = db.Column(db.DateTime, default=datetime.now, nullable=False)
+    brightness = db.Column(db.Integer, nullable=True)
     # Тип дії (on/off/brightness change)
     action = db.Column(db.String(50), nullable=False)
 
     def __repr__(self):
-        return f"<LampStats LampID: {self.lamp_id}, Action: {self.action}, Timestamp: {self.timestamp}>"
+        return f"<LampStats LampID: {self.lamp_id}, Action: {self.action}, Time: {self.time}>"
 
 
 # Модель розкладу
@@ -89,7 +98,7 @@ class TimeRange(db.Model):
 @app.route('/lamps/<int:lamp_id>/schedules', methods=['POST'])
 def create_schedule(lamp_id):
     lamp = db.session.get(LampConfig, lamp_id)
-    data = request.json
+    data = request.get_json()
 
     # Створення нового розкладу
     schedule = LampSchedule(lamp=lamp)
@@ -149,10 +158,10 @@ def delete_schedule(schedule_id):
     return jsonify({'message': 'Schedule deleted successfully'}), 200
 
 
-@app.route("/update_lamp", methods=["PUT"])
-def update_lamp():
+@app.route("/lamps/<int:lamp_id>", methods=["PUT"])
+def update_lamp(lamp_id):
     data = request.get_json()  # Отримати JSON-запит
-    lamp = db.session.get(LampConfig, CURRENT_LAMP_ID)
+    lamp = db.session.get(LampConfig, lamp_id)
 
     if not lamp:
         return jsonify({"error": "Lamp not found"}), 404
@@ -165,12 +174,6 @@ def update_lamp():
     # Збереження змін у базі даних
     db.session.commit()
 
-    # Додавання статистики
-    action = data.get("action", "updated")
-    new_stat = LampStats(lamp_id=lamp.id, action=action)
-    db.session.add(new_stat)
-    db.session.commit()
-
     return jsonify({"message": "Lamp updated successfully", "lamp": {
         "id": lamp.id,
         "power_state": lamp.power_state,
@@ -180,19 +183,41 @@ def update_lamp():
 
 
 # Отримання статистики
-@app.route("/stats")
+@app.route("/stats", methods=["GET"])
 def get_stats():
     stats = LampStats.query.all()
 
     return jsonify([{
         "id": stat.id,
         "lamp_id": stat.lamp_id,
-        "timestamp": stat.timestamp,
-        "action": stat.action
+        "time": {
+                    "year": stat.time.year,
+                    "month": stat.time.month,
+                    "day": stat.time.day,
+                    "hour": stat.time.hour,
+                    "minute": stat.time.minute
+                    },
+        "action": stat.action,
+        "brightness": stat.brightness,
     } for stat in stats])
 
 
-@app.route("/", methods=["GET", "POST"])
+# Додавання статистики
+@app.route("/stats/<int:lamp_id>", methods=["POST"])
+def update_stats(lamp_id):
+    lamp = db.session.get(LampConfig, lamp_id)
+    data = request.get_json()
+
+    action = data.get("action", "updated")
+    stat = LampStats(lamp_id=lamp.id, action=action,
+                     brightness=lamp.brightness)
+    db.session.add(stat)
+    db.session.commit()
+
+    return jsonify({'message': 'Stats created successfully'}), 200
+
+
+@app.route("/")
 def home():
     # Check if record exists, and create it if not
     if db.session.get(LampConfig, CURRENT_LAMP_ID) is None:
@@ -204,8 +229,6 @@ def home():
         db.session.add(new_stat)
         db.session.commit()
 
-        print("Default record created: ", new_lamp)
-        print(new_stat)
         print("Default record created: ", new_lamp)
         print(new_stat)
     else:

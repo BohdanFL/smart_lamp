@@ -498,8 +498,6 @@ let dailyEnergyChartInstance; // Інстанс для денного графі
 
 async function createDailyChart(selectedDate = null) {
     try {
-        // const response = await fetch("/static/data.json"); // Перевірте шлях!
-        // const data = await response.json();
         const data = await getStatsData();
 
         const currentDate =
@@ -608,9 +606,9 @@ async function createDailyChart(selectedDate = null) {
                     },
                 },
                 scales: {
-                    x: { title: { display: true, text: "Energy (kWh)" } },
+                    x: { title: { display: true, text: "Time (hours)" } },
                     y: {
-                        title: { display: true, text: "Time (hours)" },
+                        title: { display: true, text: "Energy (kWh)" },
                         beginAtZero: true,
                     },
                 },

@@ -322,14 +322,18 @@ document.addEventListener("DOMContentLoaded", async () => {
         updateColors();
     });
 
-    statisticTab.addEventListener("click", () => {
+    statisticTab.addEventListener("click", async () => {
         resetActiveTabs(); // Скидаємо активний стан
         statisticTab.classList.add("active"); // Додаємо активний стан на Statistic
         manualMode.style.display = "none"; // Ховаємо інші
         programmaticMode.style.display = "none";
         statisticMode.style.display = "block"; // Показуємо контент Statistic
         updateColors();
-        createChart();
+
+        populateMonthDropdown(); // Створюємо меню місяців
+        await createChart(); // Відображаємо місячний графік за замовчуванням
+        populateDayDropdown(); // Заповнюємо меню днів
+        await createDailyChart(); // Відображаємо графік дня за замовчуванням
     });
 
     // Початковий стан
@@ -486,6 +490,7 @@ function populateMonthDropdown() {
         const optionText = `${normalizedMonth}/${year}`;
 
         const option = document.createElement("option");
+        if (month === currentMonth) option.selected = true;
         option.value = optionValue;
         option.textContent = optionText;
 
@@ -621,6 +626,7 @@ async function createDailyChart(selectedDate = null) {
 function populateDayDropdown(selectedMonth = null) {
     const dayDropdown = document.getElementById("dayDropdown");
     const currentDate = new Date();
+    // const currentDate = selectedDate || new Date().toISOString().split("T")[0]; // Формат YYYY-MM-DD
     const currentMonth =
         selectedMonth ||
         `${currentDate.getFullYear()}-${(currentDate.getMonth() + 1)
@@ -645,6 +651,7 @@ function populateDayDropdown(selectedMonth = null) {
         }`;
 
         const option = document.createElement("option");
+        if (day === currentDate.getDate()) option.selected = true;
         option.value = optionValue;
         option.textContent = optionText;
 
@@ -653,21 +660,17 @@ function populateDayDropdown(selectedMonth = null) {
 }
 
 // Обробник зміни місяця
-document.getElementById("monthDropdown").addEventListener("change", (event) => {
-    const selectedMonth = event.target.value;
-    createChart(selectedMonth);
-    populateDayDropdown(selectedMonth);
-});
+document
+    .getElementById("monthDropdown")
+    .addEventListener("change", async (event) => {
+        const selectedMonth = event.target.value;
+        await createChart(selectedMonth);
+        populateDayDropdown(selectedMonth);
+    });
 
 // Обробник зміни дня
-document.getElementById("dayDropdown").addEventListener("change", (event) => {
-    createDailyChart(event.target.value); // Створення графіка для обраного дня
-});
-
-// Ініціалізація
-document.addEventListener("DOMContentLoaded", () => {
-    populateMonthDropdown(); // Створюємо меню місяців
-    createChart(); // Відображаємо місячний графік за замовчуванням
-    populateDayDropdown(); // Заповнюємо меню днів
-    createDailyChart(); // Відображаємо графік дня за замовчуванням
-});
+document
+    .getElementById("dayDropdown")
+    .addEventListener("change", async (event) => {
+        await createDailyChart(event.target.value); // Створення графіка для обраного дня
+    });

@@ -209,8 +209,9 @@ def update_stats(lamp_id):
     data = request.get_json()
 
     action = data.get("action", "updated")
+    brightness = data.get("brightness", 0)
     stat = LampStats(lamp_id=lamp.id, action=action,
-                     brightness=lamp.brightness)
+                     brightness=brightness)
     db.session.add(stat)
     db.session.commit()
 

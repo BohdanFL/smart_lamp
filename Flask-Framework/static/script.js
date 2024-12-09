@@ -39,8 +39,27 @@ async function getStatsData() {
     }
 }
 
+function addStatsToDB(lamp_id, action, brightness) {
+    fetch(`/stats/${lamp_id}`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+            action,
+            brightness,
+        }),
+    })
+        .then((response) => response.json())
+        .then((data) => {
+            console.log("Response from server:", data);
+            // Можна виконати додаткові дії, наприклад, оновити UI
+        })
+        .catch((error) => console.error("Error:", error));
+}
+
 function getLampState(brightness) {
-    const powerState = brightness === 0; // Увімкнення або вимкнення
+    const powerState = brightness !== 0; // Увімкнення або вимкнення
     const action = powerState ? "turn_on" : "turn_off";
     return { powerState, action };
 }
@@ -56,7 +75,6 @@ function createSchedule(lamp_id, schedule) {
         .then((response) => response.json())
         .then((data) => {
             console.log("Response from server:", data);
-            // Можна виконати додаткові дії, наприклад, оновити UI
         })
         .catch((error) => console.error("Error:", error));
 }
@@ -228,6 +246,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Обробник для завершення перетягування
     function stopDragging(event) {
+        if (dragging) {
+            // Надсилаємо оновлений стан на сервер
+            const { powerState, action } = getLampState(brightness);
+            updateLamp(
+                currentLampId,
+                powerState,
+                brightness,
+                Mode.MANUAL,
+                action
+            );
+            addStatsToDB(currentLampId, action, brightness);
+        }
         dragging = false;
     }
 
@@ -264,6 +294,7 @@ document.addEventListener("DOMContentLoaded", () => {
         // Надсилаємо оновлений стан на сервер
         const { powerState, action } = getLampState(brightness);
         updateLamp(currentLampId, powerState, brightness, Mode.MANUAL, action);
+        addStatsToDB(currentLampId, action, brightness);
     });
 
     // Функція для скидання активного стану у всіх вкладках

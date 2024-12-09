@@ -25,6 +25,20 @@ function updateLamp(lamp_id, powerState, brightness, mode, action) {
         .catch((error) => console.error("Error:", error));
 }
 
+async function getLampDataFromServer() {
+    try {
+        const response = await fetch("/jsonrequest");
+        if (!response.ok) {
+            throw new Error("Network response was not ok");
+        }
+        const data = await response.json();
+        console.log("Response from server:", data);
+        return data;
+    } catch (error) {
+        console.error("Error:", error);
+    }
+}
+
 async function getStatsData() {
     try {
         const response = await fetch("/stats");
@@ -64,7 +78,7 @@ function getLampState(brightness) {
     return { powerState, action };
 }
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
     const button = document.getElementById("toggleButton");
     const progressCircle = document.getElementById("progressCircle");
     const thumb = document.getElementById("sliderThumb");
@@ -81,9 +95,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const dayDropdown = document.getElementById("dayDropdown");
 
     const circumference = 2 * Math.PI * 90; // Довжина окружності
-    let brightness = 0; // Початкова яскравість
+    let brightness = (await getLampDataFromServer()).brightness || 0; // Початкова яскравість
     let dragging = false; // Чи тягне користувач повзунок
-    let lastBrightness = 0; // Останнє значення яскравості
+    let lastBrightness = brightness; // Останнє значення яскравості
     let currentLampId = 1;
 
     const today = new Date();

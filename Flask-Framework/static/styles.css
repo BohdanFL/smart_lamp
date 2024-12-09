@@ -49,8 +49,6 @@ body {
 
 .slider-ring {
     position: absolute;
-    width: 300px; /* Діаметр кільця */
-    height: 300px;
     border-width: 20px;
     top: 0;
     left: 0;
@@ -97,17 +95,16 @@ header {
     cursor: pointer;
     font-weight: bold;
     transition: color 0.3s;
+    font-size: 20px;
 }
 
 /* Стилі, коли текст має бути чорним */
 .tab.black {
-    font-size: 20px;
     color: #000;
 }
 
 /* Стилі, коли текст має бути білим */
 .tab.white {
-    font-size: 20px;
     color: #fff;
 }
 
@@ -118,6 +115,12 @@ header {
 
 .tab:hover {
     color: #555;
+}
+
+@media (max-width: 426px) {
+    .tab {
+        font-size: 14px;
+    }
 }
 
 /* Основний контейнер контенту (без хедера) */

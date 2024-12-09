@@ -244,7 +244,7 @@ def home():
 def jsonrequest():
     # Read data from the data space from a specific id and store the read row "id" and "remote" columns in
     lamp = db.session.get(LampConfig, CURRENT_LAMP_ID)
-    return jsonify({"ID": lamp.id, "MODE": lamp.mode, "POWER_STATE": lamp.power_state, "BRIGHTNESS": lamp.brightness})
+    return jsonify({"id": lamp.id, "mode": lamp.mode, "power_state": lamp.power_state, "brightness": lamp.brightness})
 
 
 # Сторінка для невалідних URL

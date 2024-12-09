@@ -1,5 +1,78 @@
+async function loadSchedulesFromDB(lamp_id = 1) {
+    try {
+        const response = await fetch(`/lamps/${lamp_id}/schedules`);
+        if (!response.ok) {
+            throw new Error("Network response was not ok");
+        }
+        const data = await response.json();
+        console.log("Response from server:", data);
+        return data;
+    } catch (error) {
+        console.error("Error:", error);
+    }
+}
+
+async function addScheduleToDB(lamp_id, name, days, time_ranges) {
+    await fetch(`/lamps/${lamp_id}/schedules`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+            name,
+            days,
+            time_ranges,
+        }),
+    })
+        .then((response) => response.json())
+        .then((data) => {
+            console.log("Response from server:", data);
+        })
+        .catch((error) => console.error("Error:", error));
+}
+
+async function deleteScheduleFromDB(schedule_id) {
+    await fetch(`/schedules/${schedule_id}`, {
+        method: "DELETE",
+        headers: {
+            "Content-Type": "application/json",
+        },
+    })
+        .then((response) => response.json())
+        .then((data) => {
+            console.log("Response from server:", data);
+        })
+        .catch((error) => console.error("Error:", error));
+}
+
+function createSchedule(id, scheduleName, startTime, endTime, selectedDays) {
+    // Формування назви запису
+    const blockName = scheduleName;
+    const timePeriod = `З: ${startTime} По: ${endTime}`;
+    const days = selectedDays.join(", ").toUpperCase();
+    // Створення нового елементу запису
+    const newListItem = document.createElement("li");
+    newListItem.setAttribute("data-id", id);
+    newListItem.innerHTML = `
+            <h3>${blockName}</h3>
+            <p>${days} | ${timePeriod}</p>
+            <button class="deleteBtn">Delete</button>
+        `;
+
+    // Додавання кнопки видалення
+    const deleteBtn = newListItem.querySelector(".deleteBtn");
+    deleteBtn.addEventListener("click", function () {
+        newListItem.remove();
+        const schedule_id = newListItem.getAttribute("data-id");
+        deleteScheduleFromDB(schedule_id);
+    });
+
+    // Додавання запису в список
+    scheduleList.appendChild(newListItem);
+}
+
 // JavaScript для додавання запису та видалення
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", async function () {
     const addButton = document.getElementById("addButton");
     const cancelButton = document.querySelector(".cancelBtn");
     const scheduleList = document.getElementById("scheduleList");
@@ -19,8 +92,22 @@ document.addEventListener("DOMContentLoaded", function () {
     startTime.value = "16:00";
     endTime.value = "20:00";
 
+    // Load Schedules From DB in UI
+    const schedulesData = await loadSchedulesFromDB(1);
+
+    schedulesData.forEach((schedule) => {
+        const { schedule_id, name, days, time_ranges } = schedule;
+        createSchedule(
+            schedule_id,
+            name,
+            time_ranges[0].start_time,
+            time_ranges[0].end_time,
+            days
+        );
+    });
+
     // Функція для додавання запису
-    addButton.addEventListener("click", () => {
+    addButton.addEventListener("click", async () => {
         const selectedDays = [];
 
         checkboxes.forEach((checkbox) => {
@@ -44,27 +131,16 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
 
-        // Формування назви запису
-        const blockName = blockNameInput.value;
-        const timePeriod = `З: ${startTime.value} По: ${endTime.value}`;
-        const days = selectedDays.join(", ").toUpperCase();
-        // Створення нового елементу запису
-        const newListItem = document.createElement("li");
-        newListItem.innerHTML = `
-            <h3>${blockName}</h3>
-            <p>${days} | ${timePeriod}</p>
-            <button class="deleteBtn">Delete</button>
-        `;
-
-        // Додавання кнопки видалення
-        const deleteBtn = newListItem.querySelector(".deleteBtn");
-        deleteBtn.addEventListener("click", function () {
-            newListItem.remove();
-        });
-
-        // Додавання запису в список
-        scheduleList.appendChild(newListItem);
-
+        createSchedule(
+            scheduleList.childElementCount + 1,
+            blockNameInput.value,
+            startTime.value,
+            endTime.value,
+            selectedDays
+        );
+        await addScheduleToDB(1, blockNameInput.value, selectedDays, [
+            { start_time: startTime.value, end_time: endTime.value },
+        ]);
         // Очищення полів після додавання
         // blockNameInput.value = "";
         // startTime.value = "";

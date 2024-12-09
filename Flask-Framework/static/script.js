@@ -64,21 +64,6 @@ function getLampState(brightness) {
     return { powerState, action };
 }
 
-function createSchedule(lamp_id, schedule) {
-    fetch(`/lamps/${lamp_id}/schedules`, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify(schedule),
-    })
-        .then((response) => response.json())
-        .then((data) => {
-            console.log("Response from server:", data);
-        })
-        .catch((error) => console.error("Error:", error));
-}
-
 document.addEventListener("DOMContentLoaded", () => {
     const button = document.getElementById("toggleButton");
     const progressCircle = document.getElementById("progressCircle");

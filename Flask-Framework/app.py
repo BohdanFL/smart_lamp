@@ -61,6 +61,7 @@ class LampSchedules(db.Model):
     lamp_id = db.Column(db.Integer, db.ForeignKey(
         'lamp_config.id'), nullable=False)
     name = db.Column(db.String, nullable=False)
+    enabled = db.Column(db.Boolean, nullable=False, default=False)
     # Зв'язок із днями розкладу
     days = db.relationship('ScheduleDay', backref='schedule',
                            cascade='all, delete-orphan', lazy=True)
@@ -101,7 +102,8 @@ def create_schedule(lamp_id):
     data = request.json
 
     # Створення нового розкладу
-    schedule = LampSchedules(lamp_id=lamp_id, name="Schedule")
+    name = data.get("name", "Schedule")
+    schedule = LampSchedules(lamp_id=lamp_id, name=name)
     db.session.add(schedule)
 
     # Додавання днів
@@ -143,7 +145,9 @@ def get_schedules(lamp_id):
         result.append({
             'schedule_id': schedule.id,
             'days': days,
-            'time_ranges': time_ranges
+            'time_ranges': time_ranges,
+            'name': schedule.name,
+            'enabled': schedule.enabled,
         })
 
     return jsonify(result)

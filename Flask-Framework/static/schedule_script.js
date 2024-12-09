@@ -1,4 +1,4 @@
-async function loadSchedulesFromDB(lamp_id = 1) {
+async function loadSchedulesFromServer(lamp_id = 1) {
     try {
         const response = await fetch(`/lamps/${lamp_id}/schedules`);
         if (!response.ok) {
@@ -12,26 +12,45 @@ async function loadSchedulesFromDB(lamp_id = 1) {
     }
 }
 
-async function addScheduleToDB(lamp_id, name, days, time_ranges) {
-    await fetch(`/lamps/${lamp_id}/schedules`, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-            name,
-            days,
-            time_ranges,
-        }),
-    })
-        .then((response) => response.json())
-        .then((data) => {
-            console.log("Response from server:", data);
-        })
-        .catch((error) => console.error("Error:", error));
+async function createScheduleOnServer(lamp_id, name, days, time_ranges) {
+    try {
+        const response = await fetch(`/lamps/${lamp_id}/schedules`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                name,
+                days,
+                time_ranges,
+            }),
+        });
+
+        if (!response.ok) {
+            throw new Error("Failed to create schedule");
+        }
+        const data = await response.json();
+        return data.schedule_id; // Унікальний ID з бази даних
+    } catch (error) {
+        console.error("Error creating schedule on server:", error);
+        throw error;
+    }
 }
 
-async function deleteScheduleFromDB(schedule_id) {
+function deleteSchedule(element) {
+    const schedule_id = element.getAttribute("data-id");
+
+    if (!schedule_id) {
+        console.error("ID not found for schedule element");
+        return;
+    }
+
+    deleteScheduleOnServer(schedule_id).then(() => {
+        element.remove();
+    });
+}
+
+async function deleteScheduleOnServer(schedule_id) {
     await fetch(`/schedules/${schedule_id}`, {
         method: "DELETE",
         headers: {
@@ -45,14 +64,20 @@ async function deleteScheduleFromDB(schedule_id) {
         .catch((error) => console.error("Error:", error));
 }
 
-function createSchedule(id, scheduleName, startTime, endTime, selectedDays) {
+function createSchedule(
+    schedule_id,
+    scheduleName,
+    startTime,
+    endTime,
+    selectedDays
+) {
     // Формування назви запису
     const blockName = scheduleName;
     const timePeriod = `З: ${startTime} По: ${endTime}`;
     const days = selectedDays.join(", ").toUpperCase();
     // Створення нового елементу запису
     const newListItem = document.createElement("li");
-    newListItem.setAttribute("data-id", id);
+    newListItem.setAttribute("data-id", schedule_id);
     newListItem.innerHTML = `
             <h3>${blockName}</h3>
             <p>${days} | ${timePeriod}</p>
@@ -61,10 +86,8 @@ function createSchedule(id, scheduleName, startTime, endTime, selectedDays) {
 
     // Додавання кнопки видалення
     const deleteBtn = newListItem.querySelector(".deleteBtn");
-    deleteBtn.addEventListener("click", function () {
-        newListItem.remove();
-        const schedule_id = newListItem.getAttribute("data-id");
-        deleteScheduleFromDB(schedule_id);
+    deleteBtn.addEventListener("click", () => {
+        deleteSchedule(newListItem);
     });
 
     // Додавання запису в список
@@ -93,7 +116,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     endTime.value = "20:00";
 
     // Load Schedules From DB in UI
-    const schedulesData = await loadSchedulesFromDB(1);
+    const schedulesData = await loadSchedulesFromServer(1);
 
     schedulesData.forEach((schedule) => {
         const { schedule_id, name, days, time_ranges } = schedule;
@@ -131,16 +154,21 @@ document.addEventListener("DOMContentLoaded", async function () {
             return;
         }
 
+        const schedule_id = await createScheduleOnServer(
+            1,
+            blockNameInput.value,
+            selectedDays,
+            [{ start_time: startTime.value, end_time: endTime.value }]
+        );
+
         createSchedule(
-            scheduleList.childElementCount + 1,
+            schedule_id,
             blockNameInput.value,
             startTime.value,
             endTime.value,
             selectedDays
         );
-        await addScheduleToDB(1, blockNameInput.value, selectedDays, [
-            { start_time: startTime.value, end_time: endTime.value },
-        ]);
+
         // Очищення полів після додавання
         // blockNameInput.value = "";
         // startTime.value = "";

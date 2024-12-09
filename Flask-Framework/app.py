@@ -124,7 +124,7 @@ def create_schedule(lamp_id):
         db.session.add(time_range_entry)
 
     db.session.commit()
-    return jsonify({'message': 'Schedule created successfully'}), 201
+    return jsonify({'schedule_id': schedule.id}), 201
 
 
 # Отримання розкладу за айді

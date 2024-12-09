@@ -61,6 +61,7 @@ class LampSchedules(db.Model):
     lamp_id = db.Column(db.Integer, db.ForeignKey(
         'lamp_config.id'), nullable=False)
     name = db.Column(db.String, nullable=False)
+    enabled = db.Column(db.Boolean, nullable=False, default=False)
     # Зв'язок із днями розкладу
     days = db.relationship('ScheduleDay', backref='schedule',
                            cascade='all, delete-orphan', lazy=True)
@@ -101,7 +102,8 @@ def create_schedule(lamp_id):
     data = request.json
 
     # Створення нового розкладу
-    schedule = LampSchedules(lamp_id=lamp_id, name="Schedule")
+    name = data.get("name", "Schedule")
+    schedule = LampSchedules(lamp_id=lamp_id, name=name)
     db.session.add(schedule)
 
     # Додавання днів
@@ -122,7 +124,7 @@ def create_schedule(lamp_id):
         db.session.add(time_range_entry)
 
     db.session.commit()
-    return jsonify({'message': 'Schedule created successfully'}), 201
+    return jsonify({'schedule_id': schedule.id}), 201
 
 
 # Отримання розкладу за айді
@@ -143,7 +145,9 @@ def get_schedules(lamp_id):
         result.append({
             'schedule_id': schedule.id,
             'days': days,
-            'time_ranges': time_ranges
+            'time_ranges': time_ranges,
+            'name': schedule.name,
+            'enabled': schedule.enabled,
         })
 
     return jsonify(result)
@@ -209,8 +213,9 @@ def update_stats(lamp_id):
     data = request.get_json()
 
     action = data.get("action", "updated")
+    brightness = data.get("brightness", 0)
     stat = LampStats(lamp_id=lamp.id, action=action,
-                     brightness=lamp.brightness)
+                     brightness=brightness)
     db.session.add(stat)
     db.session.commit()
 
@@ -239,7 +244,7 @@ def home():
 def jsonrequest():
     # Read data from the data space from a specific id and store the read row "id" and "remote" columns in
     lamp = db.session.get(LampConfig, CURRENT_LAMP_ID)
-    return jsonify({"ID": lamp.id, "MODE": lamp.mode, "POWER_STATE": lamp.power_state, "BRIGHTNESS": lamp.brightness})
+    return jsonify({"id": lamp.id, "mode": lamp.mode, "power_state": lamp.power_state, "brightness": lamp.brightness})
 
 
 # Сторінка для невалідних URL

@@ -202,3 +202,35 @@ document.addEventListener("DOMContentLoaded", async function () {
         addButtonPanel.style.display = "none"; // Сховати кнопку Add
     });
 });
+
+
+var timerangesCount = 0;
+const addTimerangeBtn = document.getElementById("addTimerangeBtn")
+const timerangeForm = document.getElementById("timerange-form")
+
+addTimerangeBtn.addEventListener("click", async () => {
+
+    timerangesCount++
+
+    const element = document.createElement('div')
+    element.innerHTML = `
+     <div class="form-group">
+        <label for="startTime${timerangesCount}">З:</label>
+        <input type="time" id="startTime${timerangesCount}" class="input" />
+    </div>
+
+    <div class="form-group">
+        <label for="endTime${timerangesCount}">По:</label>
+        <input type="time" id="endTime${timerangesCount}" class="input" />
+    </div>
+    `;
+
+    timerangeForm.appendChild(element);
+
+})
+
+
+
+
+
+

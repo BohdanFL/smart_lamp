@@ -94,6 +94,11 @@ label {
     background-color: #555;
 }
 
+.timerangeBtn{
+    width:200px;
+}
+
+
 .checkbox-group {
     display: flex;
     justify-content: space-between;

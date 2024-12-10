@@ -67,13 +67,19 @@ async function deleteScheduleOnServer(schedule_id) {
 function createSchedule(
     schedule_id,
     scheduleName,
-    startTime,
-    endTime,
+    time_ranges,
     selectedDays
 ) {
     // Формування назви запису
     const blockName = scheduleName;
-    const timePeriod = `З: ${startTime} По: ${endTime}`;
+//    const timePeriod = `З: ${startTime} По: ${endTime}`;
+
+    let timePeriod = [];
+
+    for (i = 0; i < time_ranges.length; i++){
+        timePeriod.push(  `З: ${time_ranges[i].startTime} По: ${time_ranges[i].endTime}`);
+    }
+
     const days = selectedDays.join(", ").toUpperCase();
     // Створення нового елементу запису
     const newListItem = document.createElement("li");
@@ -102,58 +108,37 @@ document.addEventListener("DOMContentLoaded", async function () {
     const addPanel = document.querySelector(".addPanel");
     const addButtonPanel = document.getElementById("addButtonPanel");
     const checkboxGroup = document.querySelector(".checkbox-group");
-    const startTime = document.getElementById("startTime0");
-    const endTime = document.getElementById("endTime0");
+//    const startTime = document.getElementById("startTime0");
+//    const endTime = document.getElementById("endTime0");
     const blockNameInput = document.getElementById("blockName");
     const checkboxes = checkboxGroup.querySelectorAll('input[type="checkbox"]');
 
-    // Placeholder data for test
-    blockNameInput.value = "Winter Time";
-    checkboxes.forEach((checkbox) => {
-        checkbox.checked = true;
-    });
-    startTime.value = "16:00";
-    endTime.value = "20:00";
+    //Timeranges reading
+    let time_ranges = []
 
 
-    // Load Schedules From DB in UI
-    const schedulesData = await loadSchedulesFromServer(1);
 
-    schedulesData.forEach((schedule) => {
-        const { schedule_id, name, days, time_ranges } = schedule;
-        createSchedule(
-            schedule_id,
-            name,
-            time_ranges[0].start_time,
-            time_ranges[0].end_time,
-            days
-        );
-    });
 
-    // Функція для додавання запису
-    addButton.addEventListener("click", async () => {
-        const selectedDays = [];
+        // Load Schedules From DB in UI
+        const schedulesData = await loadSchedulesFromServer(1);
+        console.log("schedulesData" + schedulesData)
+        schedulesData.forEach((schedule) => {
+            const { schedule_id, name, days, time_ranges } = schedule;
 
-        checkboxes.forEach((checkbox) => {
-            if (checkbox.checked) {
-                selectedDays.push(
-                    checkbox.nextElementSibling.getAttribute("data-day")
-                );
-            }
+            createSchedule(
+                schedule_id,
+                name,
+                time_ranges,
+                days
+            );
         });
 
-        //Timeranges reading
-
-        let timeranges = []
         for(i = 0; i <= timerangesCount; i++){
 
         elStart = document.getElementById(`startTime${i}`)
         elEnd = document.getElementById(`endTime${i}`)
 
-        timerangeObj = {
-            startTime,
-            endTime
-        }
+        timerangeObj = {}
 
 
         console.log(i)
@@ -166,24 +151,24 @@ document.addEventListener("DOMContentLoaded", async function () {
         console.log(timerangeObj.startTime)
         console.log(timerangeObj.endTime)
 
-        timeranges.push(timerangeObj)
-        }
+        time_ranges.push(timerangeObj)
+    }
 
-        console.log(timeranges)
+    console.log(time_ranges)
 
 
 
 
         //Time checking (FROM time must be less than TO)
-        for(i = 0; i < timeranges.length; i++){
-            if(timeranges[i].startTime > timeranges[i].endTime ){
+        for(i = 0; i < time_ranges.length; i++){
+            if(time_ranges[i].startTime > time_ranges[i].endTime ){
                  alert(
                 "Час З має бути меншим ніж час ПІСЛЯ"
             );
             return;
             }
 
-            if(timeranges[i].startTime === "" ||  timeranges[i].endTime === "" ){
+            if(time_ranges[i].startTime === "" ||  time_ranges[i].endTime === "" ){
                  alert(
                 "Будь ласка, заповніть усі часові проміжки."
             );
@@ -203,6 +188,19 @@ document.addEventListener("DOMContentLoaded", async function () {
             return;
         }
 
+        // Функція для додавання запису
+        addButton.addEventListener("click", async () => {
+            const selectedDays = [];
+
+            checkboxes.forEach((checkbox) => {
+                if (checkbox.checked) {
+                    selectedDays.push(
+                        checkbox.nextElementSibling.getAttribute("data-day")
+                    );
+                }
+            });
+
+
         const schedule_id = await createScheduleOnServer(
             1,
             blockNameInput.value,
@@ -213,8 +211,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         createSchedule(
             schedule_id,
             blockNameInput.value,
-            startTime.value,
-            endTime.value,
+            time_ranges,
             selectedDays
         );
 

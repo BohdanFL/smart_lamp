@@ -446,7 +446,7 @@ async function createChart(selectedMonth = null) {
                 ],
             },
             options: {
-                responsive: true,
+                maintainAspectRatio: false,
                 plugins: {
                     legend: {
                         position: "top",
@@ -602,7 +602,7 @@ async function createDailyChart(selectedDate = null) {
                 ],
             },
             options: {
-                responsive: true,
+                maintainAspectRatio: false,
                 plugins: {
                     legend: {
                         position: "top",

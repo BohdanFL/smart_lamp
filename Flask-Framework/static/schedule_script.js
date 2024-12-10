@@ -137,27 +137,32 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     console.log(time_ranges);
 
-    //Time checking (FROM time must be less than TO)
-    for (i = 0; i < time_ranges.length; i++) {
-        if (time_ranges[i].startTime > time_ranges[i].endTime) {
-            alert("Час З має бути меншим ніж час ПІСЛЯ");
-            return;
-        }
-
-        if (time_ranges[i].startTime === "" || time_ranges[i].endTime === "") {
-            alert("Будь ласка, заповніть усі часові проміжки.");
-            return;
-        }
-    }
-
-    // Перевірка на порожні поля
-    if (selectedDays.length === 0 || blockNameInput.value === "") {
-        alert("Будь ласка, заповніть усі поля та виберіть хоча б один день.");
-        return;
-    }
-
     // Функція для додавання запису
     addButton.addEventListener("click", async () => {
+        //Time checking (FROM time must be less than TO)
+        for (i = 0; i < time_ranges.length; i++) {
+            if (time_ranges[i].startTime > time_ranges[i].endTime) {
+                alert("Час З має бути меншим ніж час ПІСЛЯ");
+                return;
+            }
+
+            if (
+                time_ranges[i].startTime === "" ||
+                time_ranges[i].endTime === ""
+            ) {
+                alert("Будь ласка, заповніть усі часові проміжки.");
+                return;
+            }
+        }
+
+        // Перевірка на порожні поля
+        if (selectedDays.length === 0 || blockNameInput.value === "") {
+            alert(
+                "Будь ласка, заповніть усі поля та виберіть хоча б один день."
+            );
+            return;
+        }
+
         const selectedDays = [];
 
         checkboxes.forEach((checkbox) => {

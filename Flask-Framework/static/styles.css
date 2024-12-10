@@ -117,12 +117,6 @@ header {
     color: #555;
 }
 
-@media (max-width: 426px) {
-    .tab {
-        font-size: 14px;
-    }
-}
-
 /* Основний контейнер контенту (без хедера) */
 .container {
     display: flex;
@@ -141,7 +135,8 @@ header {
     display: flex;
     justify-content: flex-start;
     align-items: center;
-    margin-bottom: 20px;
+    margin-bottom: 8px;
+    margin-top: 12px;
     padding-left: 30px;
 }
 
@@ -162,7 +157,8 @@ header {
     display: flex;
     justify-content: flex-start;
     align-items: center;
-    margin-bottom: 20px;
+    margin-bottom: 8px;
+    margin-top: 12px;
     padding-left: 30px;
 }
 
@@ -194,4 +190,22 @@ header {
 .chart-container {
     padding: 20px; /* Відступи всередині контейнера */
     border-radius: 10px; /* Згладжені кути */
+    width: 70vw;
+    height: 35vh;
+}
+
+@media (max-width: 426px) {
+    .tab {
+        font-size: 14px;
+    }
+    .day-selector,
+    .month-selector {
+        padding-left: 0;
+    }
+}
+
+@media (max-width: 767px) {
+    .chart-container {
+        width: 90vw;
+    }
 }

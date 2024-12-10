@@ -90,6 +90,9 @@ class TimeRange(db.Model):
 def create_schedule(lamp_id):
     lamp = db.session.get(LampConfig, lamp_id)
     data = request.json
+    text_data = request.data.decode('utf-8')  # Декодуємо байти в текст
+    print(f"Received text: {text_data}")
+    return jsonify({"message": "Text received successfully", "text": text_data}), 200
 
     # Створення нового розкладу
     schedule = LampSchedule(lamp=lamp)
@@ -233,4 +236,4 @@ def page_not_found(e):
 if __name__ == "__main__":
     with app.app_context():
         db.create_all()
-    app.run(host="localhost", debug=True)
+    app.run(host="192.168.0.3", debug=True)

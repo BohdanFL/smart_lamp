@@ -102,8 +102,8 @@ document.addEventListener("DOMContentLoaded", async function () {
     const addPanel = document.querySelector(".addPanel");
     const addButtonPanel = document.getElementById("addButtonPanel");
     const checkboxGroup = document.querySelector(".checkbox-group");
-    const startTime = document.getElementById("startTime");
-    const endTime = document.getElementById("endTime");
+    const startTime = document.getElementById("startTime0");
+    const endTime = document.getElementById("endTime0");
     const blockNameInput = document.getElementById("blockName");
     const checkboxes = checkboxGroup.querySelectorAll('input[type="checkbox"]');
 
@@ -114,6 +114,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     });
     startTime.value = "16:00";
     endTime.value = "20:00";
+
 
     // Load Schedules From DB in UI
     const schedulesData = await loadSchedulesFromServer(1);
@@ -141,11 +142,59 @@ document.addEventListener("DOMContentLoaded", async function () {
             }
         });
 
+        //Timeranges reading
+
+        let timeranges = []
+        for(i = 0; i <= timerangesCount; i++){
+
+        elStart = document.getElementById(`startTime${i}`)
+        elEnd = document.getElementById(`endTime${i}`)
+
+        timerangeObj = {
+            startTime,
+            endTime
+        }
+
+
+        console.log(i)
+        console.log(`endTime${i}`)
+        console.log(elEnd)
+
+        timerangeObj.startTime = elStart.value
+        timerangeObj.endTime = elEnd.value
+
+        console.log(timerangeObj.startTime)
+        console.log(timerangeObj.endTime)
+
+        timeranges.push(timerangeObj)
+        }
+
+        console.log(timeranges)
+
+
+
+
+        //Time checking (FROM time must be less than TO)
+        for(i = 0; i < timeranges.length; i++){
+            if(timeranges[i].startTime > timeranges[i].endTime ){
+                 alert(
+                "Час З має бути меншим ніж час ПІСЛЯ"
+            );
+            return;
+            }
+
+            if(timeranges[i].startTime === "" ||  timeranges[i].endTime === "" ){
+                 alert(
+                "Будь ласка, заповніть усі часові проміжки."
+            );
+            return;
+            }
+        }
+
+
         // Перевірка на порожні поля
         if (
             selectedDays.length === 0 ||
-            startTime.value === "" ||
-            endTime.value === "" ||
             blockNameInput.value === ""
         ) {
             alert(
@@ -169,6 +218,7 @@ document.addEventListener("DOMContentLoaded", async function () {
             selectedDays
         );
 
+        //TODO
         // Очищення полів після додавання
         // blockNameInput.value = "";
         // startTime.value = "";

@@ -1,3 +1,7 @@
+let timerangesCount = 0;
+const addTimerangeBtn = document.getElementById("addTimerangeBtn");
+const timerangeForm = document.getElementById("timerange-form");
+
 async function loadSchedulesFromServer(lamp_id = 1) {
     try {
         const response = await fetch(`/lamps/${lamp_id}/schedules`);
@@ -13,6 +17,7 @@ async function loadSchedulesFromServer(lamp_id = 1) {
 }
 
 async function createScheduleOnServer(lamp_id, name, days, time_ranges) {
+    console.log(lamp_id, name, days, time_ranges);
     try {
         const response = await fetch(`/lamps/${lamp_id}/schedules`, {
             method: "POST",
@@ -99,13 +104,10 @@ document.addEventListener("DOMContentLoaded", async function () {
     const addPanel = document.querySelector(".addPanel");
     const addButtonPanel = document.getElementById("addButtonPanel");
     const checkboxGroup = document.querySelector(".checkbox-group");
-    //    const startTime = document.getElementById("startTime0");
-    //    const endTime = document.getElementById("endTime0");
+    const startTime = document.getElementById("startTime0");
+    const endTime = document.getElementById("endTime0");
     const blockNameInput = document.getElementById("blockName");
     const checkboxes = checkboxGroup.querySelectorAll('input[type="checkbox"]');
-
-    //Timeranges reading
-    let time_ranges = [];
 
     // Load Schedules From DB in UI
     const schedulesData = await loadSchedulesFromServer(1);
@@ -116,39 +118,54 @@ document.addEventListener("DOMContentLoaded", async function () {
         createSchedule(schedule_id, name, time_ranges, days);
     });
 
-    for (i = 0; i <= timerangesCount; i++) {
-        elStart = document.getElementById(`startTime${i}`);
-        elEnd = document.getElementById(`endTime${i}`);
+    // Placeholder data for test
+    blockNameInput.value = "Winter Time";
+    checkboxes.forEach((checkbox) => {
+        checkbox.checked = true;
+    });
+    startTime.value = "16:00";
+    endTime.value = "20:00";
 
-        timerangeObj = {};
-
-        console.log(i);
-        console.log(`endTime${i}`);
-        console.log(elEnd);
-
-        timerangeObj.startTime = elStart.value;
-        timerangeObj.endTime = elEnd.value;
-
-        console.log(timerangeObj.startTime);
-        console.log(timerangeObj.endTime);
-
-        time_ranges.push(timerangeObj);
-    }
+    //Timeranges reading
+    let time_ranges = [];
 
     console.log(time_ranges);
 
     // Функція для додавання запису
-    addButton.addEventListener("click", async () => {
+    addButton.addEventListener("click", () => {
+        const selectedDays = [];
+        const time_ranges = [];
+
+        checkboxes.forEach((checkbox) => {
+            if (checkbox.checked) {
+                selectedDays.push(
+                    checkbox.nextElementSibling.getAttribute("data-day")
+                );
+            }
+        });
+
+        for (i = 0; i <= timerangesCount; i++) {
+            elStart = document.getElementById(`startTime${i}`);
+            elEnd = document.getElementById(`endTime${i}`);
+
+            timerangeObj = {
+                start_time: elStart.value,
+                end_time: elEnd.value,
+            };
+
+            time_ranges.push(timerangeObj);
+        }
+
         //Time checking (FROM time must be less than TO)
         for (i = 0; i < time_ranges.length; i++) {
-            if (time_ranges[i].startTime > time_ranges[i].endTime) {
+            if (time_ranges[i].start_time > time_ranges[i].end_time) {
                 alert("Час З має бути меншим ніж час ПІСЛЯ");
                 return;
             }
 
             if (
-                time_ranges[i].startTime === "" ||
-                time_ranges[i].endTime === ""
+                time_ranges[i].start_time === "" ||
+                time_ranges[i].end_time === ""
             ) {
                 alert("Будь ласка, заповніть усі часові проміжки.");
                 return;
@@ -162,32 +179,21 @@ document.addEventListener("DOMContentLoaded", async function () {
             );
             return;
         }
-
-        const selectedDays = [];
-
-        checkboxes.forEach((checkbox) => {
-            if (checkbox.checked) {
-                selectedDays.push(
-                    checkbox.nextElementSibling.getAttribute("data-day")
-                );
-            }
-        });
-
-        const schedule_id = await createScheduleOnServer(
+        console.log(time_ranges);
+        createScheduleOnServer(
             1,
             blockNameInput.value,
             selectedDays,
-            [{ start_time: startTime.value, end_time: endTime.value }]
-        );
+            time_ranges
+        ).then((schedule_id) => {
+            createSchedule(
+                schedule_id,
+                blockNameInput.value,
+                time_ranges,
+                selectedDays
+            );
+        });
 
-        createSchedule(
-            schedule_id,
-            blockNameInput.value,
-            time_ranges,
-            selectedDays
-        );
-
-        //TODO
         // Очищення полів після додавання
         // blockNameInput.value = "";
         // startTime.value = "";
@@ -195,14 +201,6 @@ document.addEventListener("DOMContentLoaded", async function () {
         // checkboxes.forEach((checkbox) => {
         //     checkbox.checked = false;
         // });
-
-        // Placeholder data for test
-        blockNameInput.value = "Winter Time";
-        checkboxes.forEach((checkbox) => {
-            checkbox.checked = true;
-        });
-        startTime.value = "16:00";
-        endTime.value = "20:00";
 
         // Закриття панелі
         addPanel.style.display = "none";
@@ -222,11 +220,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     });
 });
 
-var timerangesCount = 0;
-const addTimerangeBtn = document.getElementById("addTimerangeBtn");
-const timerangeForm = document.getElementById("timerange-form");
-
-addTimerangeBtn.addEventListener("click", async () => {
+addTimerangeBtn.addEventListener("click", () => {
     timerangesCount++;
 
     const element = document.createElement("div");

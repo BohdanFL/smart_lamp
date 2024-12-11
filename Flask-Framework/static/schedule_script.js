@@ -253,7 +253,6 @@ addTimerangeBtn.addEventListener("click", () => {
 });
 
 document.addEventListener("DOMContentLoaded", function () {
-    const autoModeSwitch = document.getElementById("autoModeSwitch");
     const lightResponseSwitch = document.getElementById("lightResponseSwitch");
     const scheduleList = document.getElementById("scheduleList");
 
@@ -262,32 +261,9 @@ document.addEventListener("DOMContentLoaded", function () {
         return;
     }
 
-    // Загальна функція для керування станом перемикачів
-    function toggleSchedules(isEnabled) {
-        const allSchedules = scheduleList.querySelectorAll(".schedule-switch");
-        allSchedules.forEach((switchElement) => {
-            const scheduleItem = switchElement.closest("li");
-
-            if (scheduleItem) {
-                switchElement.checked = isEnabled;
-                if (isEnabled) {
-                    scheduleItem.classList.remove("disabled");
-                } else {
-                    scheduleItem.classList.add("disabled");
-                }
-            }
-        });
-    }
-
     // Light Response Mode обробник
     lightResponseSwitch.addEventListener("change", function () {
         const isEnabled = this.checked;
-
-        // Якщо увімкнено Light Response Mode, вимикаємо Auto Mode
-        // if (isEnabled) {
-        //     autoModeSwitch.checked = false;
-        //     autoModeSwitch.dispatchEvent(new Event("change"));
-        // }
 
         const { powerState } = getLampState(brightness);
         const action = isEnabled ? "automatic_on" : "automatic_off";
@@ -299,18 +275,5 @@ document.addEventListener("DOMContentLoaded", function () {
         const circularSlider = document.querySelector(".circular-slider");
         circularSlider.classList.toggle("disabled");
         scheduleList.classList.toggle("disabled");
-    });
-
-    // Auto Mode обробник
-    autoModeSwitch.addEventListener("change", function () {
-        const isEnabled = this.checked;
-
-        // Якщо увімкнено Auto Mode, вимикаємо Light Response Mode
-        // if (isEnabled) {
-        //     lightResponseSwitch.checked = false;
-        // }
-
-        // Керуємо станом розкладів
-        toggleSchedules(isEnabled);
     });
 });

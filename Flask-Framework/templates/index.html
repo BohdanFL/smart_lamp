@@ -50,10 +50,11 @@
                 id="programmaticMode"
                 class="programmatic-mode"
                 style="display: none">
-                <!-- Програмний режим (поки що порожній) -->
+
 
                 <div class="schedule_container">
                     <h1>Налаштування часу</h1>
+
 
                     <button id="addButtonPanel" class="btn">Add</button>
 
@@ -137,11 +138,22 @@
                         <button class="cancelBtn">Cancel</button>
                     </div>
 
+                          <!-- Доданий Автоматичний режим -->
+                    <div class="toggle-container">
+                        <label class="switch">
+                            <input type="checkbox" id="autoModeSwitch" />
+                            <span class="slider round"></span>
+                        </label>
+                        <h3>Автоматичний режим</h3>
+                    </div>
+
                     <!-- Панель зі списком записів -->
                     <div class="schedule">
                         <h2>Записи:</h2>
                         <ul id="scheduleList"></ul>
                     </div>
+
+
                 </div>
             </div>
 

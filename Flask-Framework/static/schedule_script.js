@@ -83,6 +83,10 @@ function createSchedule(schedule_id, scheduleName, time_ranges, selectedDays) {
     newListItem.innerHTML = `
             <h3>${scheduleName}</h3>
             <p>${days} | ${timePeriod}</p>
+             <label class="switch">
+                    <input type="checkbox" class="schedule-switch" checked />
+                    <span class="slider round"></span>
+                </label>
             <button class="deleteBtn">Delete</button>
         `;
 
@@ -90,6 +94,7 @@ function createSchedule(schedule_id, scheduleName, time_ranges, selectedDays) {
     const deleteBtn = newListItem.querySelector(".deleteBtn");
     deleteBtn.addEventListener("click", () => {
         deleteSchedule(newListItem);
+
     });
 
     // Додавання запису в список
@@ -239,4 +244,32 @@ addTimerangeBtn.addEventListener("click", () => {
     `;
 
     timerangeForm.appendChild(element);
+});
+
+
+// Головний перемикач для Автоматичного режиму
+const autoModeSwitch = document.getElementById('autoModeSwitch');
+
+// Подія на зміну стану головного перемикача
+autoModeSwitch.addEventListener('change', function () {
+    const isEnabled = this.checked;
+
+    // Знаходимо всі розклади (елементи з класом `schedule-switch`)
+    const allSchedules = document.querySelectorAll('.schedule-switch');
+
+    // Перебираємо всі розклади
+    allSchedules.forEach((switchElement) => {
+        // Знаходимо батьківський блок (щоб додавати/знімати клас `disabled`)
+        const scheduleItem = switchElement.closest('li'); // Блок <li>, що містить розклад
+
+        if (isEnabled) {
+            // Увімкнути розклад
+            switchElement.checked = true;
+            scheduleItem.classList.remove('disabled');
+        } else {
+            // Вимкнути розклад
+            switchElement.checked = false;
+            scheduleItem.classList.add('disabled');
+        }
+    });
 });

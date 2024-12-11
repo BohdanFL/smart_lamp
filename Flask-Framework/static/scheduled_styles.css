@@ -285,3 +285,106 @@ label {
         height: 28px;
     }
 }
+
+
+
+
+.schedule-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.toggle-container {
+    margin-top:30px;
+    display: flex;
+    align-items: center;
+}
+
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 34px;
+    height: 20px;
+    margin-left: 10px;
+}
+
+.switch input {
+    display: none;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: 0.4s;
+    border-radius: 34px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 14px;
+    width: 14px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: 0.4s;
+    border-radius: 50%;
+}
+
+input:checked + .slider {
+    background-color: #2196F3;
+}
+
+input:checked + .slider:before {
+    transform: translateX(14px);
+}
+
+/* Сірий фон і стиль для вимкнених блоків */
+li.disabled {
+    background-color: #f0f0f0; /* Сірий фон */
+    color: #999; /* Сірий текст */
+    pointer-events: none; /* Забороняє взаємодію */
+    opacity: 0.6; /* Напівпрозорість */
+}
+
+/* Сірий вигляд для кнопки Delete */
+li.disabled .deleteBtn {
+    background-color: #ddd;
+    color: #aaa;
+    cursor: not-allowed; /* Вказує, що кнопка недоступна */
+}
+
+.circular-slider.disabled {
+    opacity: 0.5; /* Напівпрозорість для відключеного стану */
+    pointer-events: none;
+}
+
+li.disabled {
+    background-color: #f9f9f9;
+    color: #bbb;
+}
+
+
+.deleteTimerangeBtn {
+    background-color: red;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-left: 10px;
+}
+
+.deleteTimerangeBtn:hover {
+    background-color: darkred;
+}
+
+
+
+

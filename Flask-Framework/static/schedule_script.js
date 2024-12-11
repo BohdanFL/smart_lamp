@@ -81,7 +81,7 @@ function createSchedule(schedule_id, scheduleName, time_ranges, selectedDays) {
     const newListItem = document.createElement("li");
     newListItem.setAttribute("data-id", schedule_id);
     newListItem.innerHTML = `
-            <h3>${scheduleName}</h3>
+            <h3 id="schedule-header">${scheduleName}</h3>
             <p>${days} | ${timePeriod}</p>
              <label class="switch">
                     <input type="checkbox" class="schedule-switch" checked />
@@ -164,7 +164,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         //Time checking (FROM time must be less than TO)
         for (i = 0; i < time_ranges.length; i++) {
             if (time_ranges[i].start_time > time_ranges[i].end_time) {
-                alert("Час З має бути меншим ніж час ПІСЛЯ");
+                alert("The time FROM should be less than the time TO");
                 return;
             }
 
@@ -172,7 +172,7 @@ document.addEventListener("DOMContentLoaded", async function () {
                 time_ranges[i].start_time === "" ||
                 time_ranges[i].end_time === ""
             ) {
-                alert("Будь ласка, заповніть усі часові проміжки.");
+                alert("Please fill in all the timeranges.");
                 return;
             }
         }
@@ -180,7 +180,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         // Перевірка на порожні поля
         if (selectedDays.length === 0 || blockNameInput.value === "") {
             alert(
-                "Будь ласка, заповніть усі поля та виберіть хоча б один день."
+                "Please, fill in all fields and select the day."
             );
             return;
         }
@@ -225,87 +225,92 @@ document.addEventListener("DOMContentLoaded", async function () {
     });
 });
 
+
+
+
+// Timeranges frontend
+
 addTimerangeBtn.addEventListener("click", () => {
     timerangesCount++;
 
+    // Створення нового блоку часового проміжку
     const element = document.createElement("div");
     element.classList.add("timeranges-group");
     element.innerHTML = `
-    
-     <div class="form-group">
-        <label for="startTime${timerangesCount}">З:</label>
-        <input type="time" id="startTime${timerangesCount}" class="input" />
-    </div>
-
-    <div class="form-group">
-        <label for="endTime${timerangesCount}">По:</label>
-        <input type="time" id="endTime${timerangesCount}" class="input" />
-    </div>
+        <div class="form-group">
+            <label for="startTime${timerangesCount}">From:</label>
+            <input type="time" id="startTime${timerangesCount}" class="input" />
+        </div>
+        <div class="form-group">
+            <label for="endTime${timerangesCount}">To:</label>
+            <input type="time" id="endTime${timerangesCount}" class="input" />
+        </div>
+        <button class="deleteTimerangeBtn btn">Delete</button>
     `;
 
+    // Додаємо новий блок до форми
     timerangeForm.appendChild(element);
-});
 
-
-//    ----      Schedule switch      ---
-
-
-// Головний перемикач для Автоматичного режиму
-const autoModeSwitch = document.getElementById('autoModeSwitch');
-
-// Подія на зміну стану головного перемикача
-autoModeSwitch.addEventListener('change', function () {
-    const isEnabled = this.checked;
-
-    // Знаходимо всі розклади (елементи з класом `schedule-switch`)
-    const allSchedules = document.querySelectorAll('.schedule-switch');
-
-    // Перебираємо всі розклади
-    allSchedules.forEach((switchElement) => {
-        // Знаходимо батьківський блок (щоб додавати/знімати клас `disabled`)
-        const scheduleItem = switchElement.closest('li'); // Блок <li>, що містить розклад
-
-        if (isEnabled) {
-            // Увімкнути розклад
-            switchElement.checked = true;
-            scheduleItem.classList.remove('disabled');
-        } else {
-            // Вимкнути розклад
-            switchElement.checked = false;
-            scheduleItem.classList.add('disabled');
-        }
+    // Додаємо слухач події для кнопки видалення
+    const deleteButton = element.querySelector(".deleteTimerangeBtn");
+    deleteButton.addEventListener("click", () => {
+        element.remove(); // Видаляє блок із форми
     });
 });
 
 
+document.addEventListener("DOMContentLoaded", function () {
+    const autoModeSwitch = document.getElementById("autoModeSwitch");
+    const lightResponseSwitch = document.getElementById("lightResponseSwitch");
+    const scheduleList = document.getElementById("scheduleList");
 
-//    ----      Light responce switch      ---
+    if (!scheduleList) {
+        console.error("scheduleList element not found");
+        return;
+    }
 
+    // Загальна функція для керування станом перемикачів
+    function toggleSchedules(isEnabled) {
+        const allSchedules = scheduleList.querySelectorAll(".schedule-switch");
+        allSchedules.forEach((switchElement) => {
+            const scheduleItem = switchElement.closest("li");
 
-const lightResponseSwitch = document.getElementById('lightResponseSwitch');
+            if (scheduleItem) {
+                switchElement.checked = isEnabled;
+                if (isEnabled) {
+                    scheduleItem.classList.remove("disabled");
+                } else {
+                    scheduleItem.classList.add("disabled");
+                }
+            }
+        });
+    }
 
-// Подія на зміну стану головного перемикача
-lightResponseSwitch.addEventListener('change', function () {
-    const isEnabled = this.checked;
+    // Light Response Mode обробник
+    lightResponseSwitch.addEventListener("change", function () {
+        const isEnabled = this.checked;
 
-    // Знаходимо всі розклади (елементи з класом `schedule-switch`)
-    const allSchedules = document.querySelectorAll('.schedule-switch');
-
-    // Перебираємо всі розклади
-    allSchedules.forEach((switchElement) => {
-        // Знаходимо батьківський блок (щоб додавати/знімати клас `disabled`)
-        const scheduleItem = switchElement.closest('li'); // Блок <li>, що містить розклад
-
+        // Якщо увімкнено Light Response Mode, вимикаємо Auto Mode
         if (isEnabled) {
-            // Увімкнути розклад
-            switchElement.checked = true;
-            scheduleItem.classList.remove('disabled');
-            autoModeSwitch.classList.remove('disabled');
-        } else {
-            // Вимкнути розклад
-            switchElement.checked = false;
-            scheduleItem.classList.add('disabled');
-            autoModeSwitch.classList.add('disabled');
+            autoModeSwitch.checked = false;
+            autoModeSwitch.dispatchEvent(new Event("change"));
         }
+
+        // Керуємо станом Circular Slider
+        const circularSlider = document.querySelector(".circular-slider");
+        circularSlider.style.pointerEvents = isEnabled ? "none" : "auto";
+    });
+
+    // Auto Mode обробник
+    autoModeSwitch.addEventListener("change", function () {
+        const isEnabled = this.checked;
+
+        // Якщо увімкнено Auto Mode, вимикаємо Light Response Mode
+        if (isEnabled) {
+            lightResponseSwitch.checked = false;
+        }
+
+        // Керуємо станом розкладів
+        toggleSchedules(isEnabled);
     });
 });

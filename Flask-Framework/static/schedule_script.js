@@ -224,7 +224,9 @@ addTimerangeBtn.addEventListener("click", () => {
     timerangesCount++;
 
     const element = document.createElement("div");
+    element.classList.add("timeranges-group");
     element.innerHTML = `
+    
      <div class="form-group">
         <label for="startTime${timerangesCount}">З:</label>
         <input type="time" id="startTime${timerangesCount}" class="input" />

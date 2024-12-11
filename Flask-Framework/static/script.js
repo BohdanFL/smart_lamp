@@ -163,6 +163,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 
             monthLabel.style.color = "rgb(255,255,255)";
             dayLabel.style.color = "rgb(255,255,255)";
+            [dayDropdown, monthDropdown].forEach((dropdown) => {
+                dropdown.style.color = "white";
+                dropdown.style.background = "black";
+            });
         } else {
             button.style.color = "rgb(255,255,255)";
             manualTab.classList.add("black");
@@ -174,6 +178,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 
             monthLabel.style.color = "rgb(0,0,0)";
             dayLabel.style.color = "rgb(0,0,0)";
+            [dayDropdown, monthDropdown].forEach((dropdown) => {
+                dropdown.style.color = "black";
+                dropdown.style.background = "white";
+            });
         }
 
         // Оновлюємо кольори контейнерів графіків

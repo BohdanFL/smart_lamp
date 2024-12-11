@@ -182,6 +182,8 @@ header {
     gap: 50px; /* Відстань між графіками */
     width: 100%; /* Ширина на всю вкладку */
     background-color: #000; /* Чорний фон */
+    border-radius: 10px;
+    overflow: hidden;
 }
 .chart-container canvas {
     background-color: transparent; /* Забезпечення прозорості для графіка */
@@ -189,7 +191,6 @@ header {
 
 .chart-container {
     padding: 20px; /* Відступи всередині контейнера */
-    border-radius: 10px; /* Згладжені кути */
     width: 70vw;
     height: 35vh;
 }

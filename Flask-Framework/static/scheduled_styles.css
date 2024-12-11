@@ -94,10 +94,23 @@ label {
     background-color: #555;
 }
 
-.timerangeBtn{
-    width:200px;
+.timeranges-group {
+    display: flex;
 }
 
+.form-group {
+    display: flex;
+    align-items: center;
+    flex: 1;
+}
+
+.timeranges-group label {
+    margin: 0px 5px 0;
+}
+
+.timerangeBtn {
+    width: 200px;
+}
 
 .checkbox-group {
     display: flex;

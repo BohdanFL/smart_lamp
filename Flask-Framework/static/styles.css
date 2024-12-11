@@ -11,8 +11,20 @@ body {
 }
 
 .container {
+    flex-direction:column;
+    justify-content:center;
     text-align: center;
     position: relative;
+}
+
+#manualMode{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+}
+
+.lightResponseContainer{
+    margin-bottom:50px;
 }
 
 .circular-slider {
@@ -20,6 +32,7 @@ body {
     width: 200px;
     height: 200px;
 }
+
 
 .round-button {
     width: 150px;
@@ -238,7 +251,6 @@ header {
 .toggle-container {
     display: flex;
     align-items: center;
-    margin-left: 20px;
 }
 
 .switch {

@@ -247,6 +247,9 @@ addTimerangeBtn.addEventListener("click", () => {
 });
 
 
+//    ----      Schedule switch      ---
+
+
 // Головний перемикач для Автоматичного режиму
 const autoModeSwitch = document.getElementById('autoModeSwitch');
 
@@ -270,6 +273,39 @@ autoModeSwitch.addEventListener('change', function () {
             // Вимкнути розклад
             switchElement.checked = false;
             scheduleItem.classList.add('disabled');
+        }
+    });
+});
+
+
+
+//    ----      Light responce switch      ---
+
+
+const lightResponseSwitch = document.getElementById('lightResponseSwitch');
+
+// Подія на зміну стану головного перемикача
+lightResponseSwitch.addEventListener('change', function () {
+    const isEnabled = this.checked;
+
+    // Знаходимо всі розклади (елементи з класом `schedule-switch`)
+    const allSchedules = document.querySelectorAll('.schedule-switch');
+
+    // Перебираємо всі розклади
+    allSchedules.forEach((switchElement) => {
+        // Знаходимо батьківський блок (щоб додавати/знімати клас `disabled`)
+        const scheduleItem = switchElement.closest('li'); // Блок <li>, що містить розклад
+
+        if (isEnabled) {
+            // Увімкнути розклад
+            switchElement.checked = true;
+            scheduleItem.classList.remove('disabled');
+            autoModeSwitch.classList.remove('disabled');
+        } else {
+            // Вимкнути розклад
+            switchElement.checked = false;
+            scheduleItem.classList.add('disabled');
+            autoModeSwitch.classList.add('disabled');
         }
     });
 });

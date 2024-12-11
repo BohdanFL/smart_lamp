@@ -148,9 +148,12 @@ document.addEventListener("DOMContentLoaded", async function () {
             }
         });
 
+        let timeRangesStartTimes = document.querySelectorAll(".startTime");
+        let timeRangesEndTimes = document.querySelectorAll(".endTime");
+
         for (i = 0; i <= timerangesCount; i++) {
-            elStart = document.getElementById(`startTime${i}`);
-            elEnd = document.getElementById(`endTime${i}`);
+            elStart = timeRangesStartTimes[i];
+            elEnd = timeRangesEndTimes[i];
 
             timerangeObj = {
                 start_time: elStart.value,
@@ -233,11 +236,11 @@ addTimerangeBtn.addEventListener("click", () => {
     element.innerHTML = `
         <div class="form-group">
             <label for="startTime${timerangesCount}">From:</label>
-            <input type="time" id="startTime${timerangesCount}" class="input" />
+            <input type="time" id="startTime${timerangesCount}" class="startTime input" />
         </div>
         <div class="form-group">
             <label for="endTime${timerangesCount}">To:</label>
-            <input type="time" id="endTime${timerangesCount}" class="input" />
+            <input type="time" id="endTime${timerangesCount}" class="endTime input" />
         </div>
         <button class="deleteTimerangeBtn btn">Delete</button>
     `;
@@ -249,6 +252,7 @@ addTimerangeBtn.addEventListener("click", () => {
     const deleteButton = element.querySelector(".deleteTimerangeBtn");
     deleteButton.addEventListener("click", () => {
         element.remove(); // Видаляє блок із форми
+        timerangesCount--;
     });
 });
 

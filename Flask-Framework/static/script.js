@@ -3,6 +3,8 @@ const Mode = {
     AUTOMATIC: 1,
     SCHEDULE: 2,
 };
+let currentLampId = 1;
+let brightness = 0;
 
 function updateLamp(lamp_id, powerState, brightness, mode, action) {
     fetch(`/lamps/${lamp_id}`, {
@@ -95,10 +97,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     const dayDropdown = document.getElementById("dayDropdown");
 
     const circumference = 2 * Math.PI * 90; // Довжина окружності
-    let brightness = (await getLampDataFromServer()).brightness || 0; // Початкова яскравість
+    brightness = (await getLampDataFromServer()).brightness || 0; // Початкова яскравість
     let dragging = false; // Чи тягне користувач повзунок
     let lastBrightness = brightness; // Останнє значення яскравості
-    let currentLampId = 1;
 
     const today = new Date();
     const currentMonth = today.getMonth() + 1; // Місяці починаються з 0

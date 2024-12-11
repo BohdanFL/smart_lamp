@@ -94,7 +94,6 @@ function createSchedule(schedule_id, scheduleName, time_ranges, selectedDays) {
     const deleteBtn = newListItem.querySelector(".deleteBtn");
     deleteBtn.addEventListener("click", () => {
         deleteSchedule(newListItem);
-
     });
 
     // Додавання запису в список
@@ -179,9 +178,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
         // Перевірка на порожні поля
         if (selectedDays.length === 0 || blockNameInput.value === "") {
-            alert(
-                "Please, fill in all fields and select the day."
-            );
+            alert("Please, fill in all fields and select the day.");
             return;
         }
         console.log(time_ranges);
@@ -225,9 +222,6 @@ document.addEventListener("DOMContentLoaded", async function () {
     });
 });
 
-
-
-
 // Timeranges frontend
 
 addTimerangeBtn.addEventListener("click", () => {
@@ -257,7 +251,6 @@ addTimerangeBtn.addEventListener("click", () => {
         element.remove(); // Видаляє блок із форми
     });
 });
-
 
 document.addEventListener("DOMContentLoaded", function () {
     const autoModeSwitch = document.getElementById("autoModeSwitch");
@@ -291,14 +284,21 @@ document.addEventListener("DOMContentLoaded", function () {
         const isEnabled = this.checked;
 
         // Якщо увімкнено Light Response Mode, вимикаємо Auto Mode
-        if (isEnabled) {
-            autoModeSwitch.checked = false;
-            autoModeSwitch.dispatchEvent(new Event("change"));
-        }
+        // if (isEnabled) {
+        //     autoModeSwitch.checked = false;
+        //     autoModeSwitch.dispatchEvent(new Event("change"));
+        // }
+
+        const { powerState } = getLampState(brightness);
+        const action = isEnabled ? "automatic_on" : "automatic_off";
+        const currentMode = isEnabled ? Mode.AUTOMATIC : Mode.MANUAL;
+        updateLamp(currentLampId, powerState, brightness, currentMode, action);
+        addStatsToDB(currentLampId, action, brightness);
 
         // Керуємо станом Circular Slider
         const circularSlider = document.querySelector(".circular-slider");
-        circularSlider.style.pointerEvents = isEnabled ? "none" : "auto";
+        circularSlider.classList.toggle("disabled");
+        scheduleList.classList.toggle("disabled");
     });
 
     // Auto Mode обробник
@@ -306,9 +306,9 @@ document.addEventListener("DOMContentLoaded", function () {
         const isEnabled = this.checked;
 
         // Якщо увімкнено Auto Mode, вимикаємо Light Response Mode
-        if (isEnabled) {
-            lightResponseSwitch.checked = false;
-        }
+        // if (isEnabled) {
+        //     lightResponseSwitch.checked = false;
+        // }
 
         // Керуємо станом розкладів
         toggleSchedules(isEnabled);

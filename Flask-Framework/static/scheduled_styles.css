@@ -286,9 +286,6 @@ label {
     }
 }
 
-
-
-
 .schedule-header {
     display: flex;
     justify-content: space-between;
@@ -296,7 +293,7 @@ label {
 }
 
 .toggle-container {
-    margin-top:30px;
+    margin-top: 30px;
     display: flex;
     align-items: center;
 }
@@ -338,38 +335,34 @@ label {
 }
 
 input:checked + .slider {
-    background-color: #2196F3;
+    background-color: #2196f3;
 }
 
 input:checked + .slider:before {
     transform: translateX(14px);
 }
 
-/* Сірий фон і стиль для вимкнених блоків */
-li.disabled {
-    background-color: #f0f0f0; /* Сірий фон */
-    color: #999; /* Сірий текст */
+#scheduleList.disabled li {
+    background-color: #f9f9f9;
+    color: #bbb;
     pointer-events: none; /* Забороняє взаємодію */
     opacity: 0.6; /* Напівпрозорість */
 }
 
-/* Сірий вигляд для кнопки Delete */
-li.disabled .deleteBtn {
+#scheduleList.disabled .deleteBtn {
     background-color: #ddd;
     color: #aaa;
     cursor: not-allowed; /* Вказує, що кнопка недоступна */
+}
+
+#scheduleList.disabled .slider {
+    background-color: #ddd;
 }
 
 .circular-slider.disabled {
     opacity: 0.5; /* Напівпрозорість для відключеного стану */
     pointer-events: none;
 }
-
-li.disabled {
-    background-color: #f9f9f9;
-    color: #bbb;
-}
-
 
 .deleteTimerangeBtn {
     background-color: red;
@@ -384,7 +377,3 @@ li.disabled {
 .deleteTimerangeBtn:hover {
     background-color: darkred;
 }
-
-
-
-

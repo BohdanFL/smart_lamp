@@ -314,7 +314,7 @@ def check_schedules():
                         lamp.power_state = True
                         schedule.last_action = "ON"  # Оновлюємо стан розкладу
                         db.session.add(LampStats(lamp_id=lamp.id,
-                                                 action="ON", brightness=lamp.brightness))
+                                                 action="turn_on", brightness=lamp.brightness))
                         print(f"Lamp {lamp.id} turned ON at {
                             current_time} due to schedule {schedule.id}")
                 else:
@@ -323,7 +323,7 @@ def check_schedules():
                         lamp.power_state = False
                         schedule.last_action = "OFF"  # Оновлюємо стан розкладу
                         db.session.add(LampStats(lamp_id=lamp.id,
-                                                 action="OFF", brightness=lamp.brightness))
+                                                 action="turn_off", brightness=lamp.brightness))
                         print(f"Lamp {lamp.id} turned OFF at {
                             current_time} due to schedule {schedule.id}")
 

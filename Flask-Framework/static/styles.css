@@ -294,21 +294,5 @@ header {
     }
 }
 
-@media (max-width: 426px) {
-    .tab {
-        font-size: 14px;
-    }
-    .day-selector,
-    .month-selector {
-        padding-left: 0;
-    }
-}
-
-@media (max-width: 767px) {
-    .chart-container {
-        width: 90vw;
-    }
-}
-
 
 

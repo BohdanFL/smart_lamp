@@ -140,6 +140,9 @@ document.addEventListener("DOMContentLoaded", async () => {
         programmaticTab.style.borderBottomColor = textColor;
         statisticTab.style.borderBottomColor = textColor;
     }
+    const lightResponseLabel = document.querySelector(
+        "label[for=lightResponseSwitch]"
+    );
 
     // Оновлюємо кольори, коли відбувається будь-яке оновлення
     function updateColors() {
@@ -162,6 +165,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             programmaticTab.classList.remove("black");
             statisticTab.classList.remove("black");
 
+            lightResponseLabel.style.color = "white";
             monthLabel.style.color = "rgb(255,255,255)";
             dayLabel.style.color = "rgb(255,255,255)";
             [dayDropdown, monthDropdown].forEach((dropdown) => {
@@ -177,6 +181,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             programmaticTab.classList.remove("white");
             statisticTab.classList.remove("white");
 
+            lightResponseLabel.style.color = "black";
             monthLabel.style.color = "rgb(0,0,0)";
             dayLabel.style.color = "rgb(0,0,0)";
             [dayDropdown, monthDropdown].forEach((dropdown) => {
@@ -317,7 +322,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     manualTab.addEventListener("click", () => {
         resetActiveTabs(); // Скидаємо активний стан
         manualTab.classList.add("active"); // Додаємо активний стан на Manual
-        manualMode.style.display = "block"; // Показуємо контент Manual
+        manualMode.style.display = "flex"; // Показуємо контент Manual
         programmaticMode.style.display = "none"; // Ховаємо інші
         statisticMode.style.display = "none";
         updateColors();
@@ -327,7 +332,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         resetActiveTabs(); // Скидаємо активний стан
         programmaticTab.classList.add("active"); // Додаємо активний стан на Programmatic
         manualMode.style.display = "none"; // Ховаємо інші
-        programmaticMode.style.display = "block"; // Показуємо контент Programmatic
+        programmaticMode.style.display = "flex"; // Показуємо контент Programmatic
         statisticMode.style.display = "none";
         updateColors();
     });
@@ -337,7 +342,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         statisticTab.classList.add("active"); // Додаємо активний стан на Statistic
         manualMode.style.display = "none"; // Ховаємо інші
         programmaticMode.style.display = "none";
-        statisticMode.style.display = "block"; // Показуємо контент Statistic
+        statisticMode.style.display = "flex"; // Показуємо контент Statistic
         updateColors();
 
         populateMonthDropdown(); // Створюємо меню місяців

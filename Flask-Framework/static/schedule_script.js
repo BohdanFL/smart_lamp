@@ -77,25 +77,36 @@ function createSchedule(
     enabled = false
 ) {
     // Формування назви запису
-    let timePeriod = "";
-    for (i = 0; i < time_ranges.length; i++) {
-        timePeriod += `З: ${time_ranges[i].start_time} По: ${time_ranges[i].end_time}; `;
+    let timePeriod = `<span>${time_ranges[0].start_time} - ${time_ranges[0].end_time}</span>`;
+    for (i = 1; i < time_ranges.length; i++) {
+        timePeriod += ` <strong>|</strong> <span>${time_ranges[i].start_time} - ${time_ranges[i].end_time}</span> `;
     }
 
-    const days = selectedDays.join(", ").toUpperCase();
+    let days = "";
+    for (i = 0; i < selectedDays.length; i++) {
+        days += `<span class="checkmark small" data-day="${selectedDays[i]}"></span>`;
+    }
+
     // Створення нового елементу запису
     const newListItem = document.createElement("li");
+    newListItem.classList.add("schedule_item");
     newListItem.setAttribute("data-id", schedule_id);
+    // <p>${days} | ${timePeriod}</p>
     newListItem.innerHTML = `
-            <h3 id="schedule-header">${scheduleName}</h3>
-            <p>${days} | ${timePeriod}</p>
-             <label class="switch">
+            <div class="schedule_body">
+                <h3 class="schedule-header">${scheduleName}</h3>
+                <p class="schedule_days">${days}</p>
+                <p class="schedule_times">${timePeriod}</p>
+            </div>
+            <div class="schedule_btns">
+                <button class="deleteBtn">Delete</button>
+                <label class="switch">
                     <input type="checkbox" class="schedule-switch" ${
                         enabled ? "checked" : ""
-                    }/>
+                    }>
                     <span class="slider round"></span>
                 </label>
-            <button class="deleteBtn">Delete</button>
+            </div>
         `;
     // Додавання кнопки видалення
     const deleteBtn = newListItem.querySelector(".deleteBtn");

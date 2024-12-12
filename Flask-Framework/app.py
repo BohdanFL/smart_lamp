@@ -124,6 +124,7 @@ def create_schedule(lamp_id):
 
         time_range_entry = TimeRange(
             schedule=schedule, start_time=start_time, end_time=end_time)
+        print(time_range_entry)
         db.session.add(time_range_entry)
 
     db.session.commit()

@@ -289,10 +289,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     // Обробник події для кнопки
     button.addEventListener("click", () => {
         if (brightness === 0) {
-            // Якщо кнопка в режимі "OFF", переключаємо на "ON" і встановлюємо яскравість на 100
-            brightness = 100;
+            // Якщо кнопка в режимі "OFF", переключаємо на "ON" і встановлюємо останню яскравість
+            brightness = lastUserBrightness;
         } else {
             // Якщо кнопка в режимі "ON", переключаємо на "OFF" і скидаємо яскравість на 0
+            lastUserBrightness = brightness; // Зберігаємо поточну яскравість
             brightness = 0;
         }
         updateColors(); // Оновлюємо кольори кнопки та фону
@@ -406,7 +407,7 @@ async function createChart(selectedMonth = null) {
                     entry.time.minute
                 );
                 const durationInMinutes =
-                    (turnOffTime - lastActionTime) / (1000 * 60); // Тривалість у хвилинах
+                    (turnOffTime - lastActionTime) / (1000 * 60 * 0.06 * 1000); // Тривалість у хвилинах
                 timePerDay[dayKey] += durationInMinutes; // Додаємо тривалість до відповідного дня
                 lastActionTime = null; // Скидаємо час останнього ввімкнення
             }
@@ -465,7 +466,7 @@ async function createChart(selectedMonth = null) {
                 scales: {
                     x: { title: { display: true, text: "Date" } },
                     y: {
-                        title: { display: true, text: "Energy (kWh)" },
+                        title: { display: true, text: "Energy (mW*h)" },
                         beginAtZero: true,
                     },
                 },
@@ -556,7 +557,7 @@ async function createDailyChart(selectedDate = null) {
 
                 // Обчислення тривалості в годинах
                 const durationInMinutes =
-                    (turnOffTime - lastActionTime) / (1000 * 60); // тривалість у хвилинах
+                    (turnOffTime - lastActionTime) / (1000 * 60 * 0.06 * 1000); // тривалість у хвилинах
                 const startHour = lastActionTime.getHours();
                 const endHour = turnOffTime.getHours();
 
@@ -621,7 +622,7 @@ async function createDailyChart(selectedDate = null) {
                 scales: {
                     x: { title: { display: true, text: "Time (hours)" } },
                     y: {
-                        title: { display: true, text: "Energy (kWh)" },
+                        title: { display: true, text: "Energy (mW*h)" },
                         beginAtZero: true,
                     },
                 },

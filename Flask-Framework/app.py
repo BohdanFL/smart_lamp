@@ -154,7 +154,35 @@ def get_schedules(lamp_id):
     return jsonify(result)
 
 
+@app.route('/schedules/<int:schedule_id>', methods=['PUT'])
+def update_schedule(schedule_id):
+    data = request.get_json()  # Отримати JSON-запит
+    schedule = db.session.get(LampSchedules, schedule_id)
+
+    if not schedule:
+        return jsonify({"error": "Schedule not found"}), 404
+
+    # Оновлення стану розкладу
+    schedule.enabled = data.get("enabled", schedule.enabled)
+    schedule.name = data.get("name", schedule.name)
+    # schedule.days = data.get("days", schedule.days)
+    # schedule.time_ranges = data.get("time_ranges", schedule.time_ranges)
+
+    # Збереження змін у базі даних
+    db.session.commit()
+
+    return jsonify({"message": "Schedule updated successfully", "schedule": {
+        "id": schedule.id,
+        "lamp_id": schedule.lamp_id,
+        "name": schedule.name,
+        # "days": schedule.days,
+        # "time_ranges": schedule.time_ranges,
+        "enabled": schedule.enabled
+    }})
+
 # Видалення розкладу за айді
+
+
 @app.route('/schedules/<int:schedule_id>', methods=['DELETE'])
 def delete_schedule(schedule_id):
     schedule = db.session.get(LampSchedules, schedule_id)
@@ -172,14 +200,14 @@ def update_lamp(lamp_id):
         return jsonify({"error": "Lamp not found"}), 404
 
     # Оновлення стану лампочки
-    lamp.power_state = data.get("power_state", lamp.power_state)
+    lamp.power_state = data.get("enabled", lamp.power_state)
     lamp.brightness = data.get("brightness", lamp.brightness)
     lamp.mode = data.get("mode", lamp.mode)
 
     # Збереження змін у базі даних
     db.session.commit()
 
-    return jsonify({"message": "Lamp updated successfully", "lamp": {
+    return jsonify({"message": "Lamp updated successfully", "schedule": {
         "id": lamp.id,
         "power_state": lamp.power_state,
         "brightness": lamp.brightness,

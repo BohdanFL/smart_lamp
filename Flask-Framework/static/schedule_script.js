@@ -69,7 +69,13 @@ async function deleteScheduleOnServer(schedule_id) {
         .catch((error) => console.error("Error:", error));
 }
 
-function createSchedule(schedule_id, scheduleName, time_ranges, selectedDays) {
+function createSchedule(
+    schedule_id,
+    scheduleName,
+    time_ranges,
+    selectedDays,
+    enabled = false
+) {
     // Формування назви запису
     let timePeriod = "";
     for (i = 0; i < time_ranges.length; i++) {
@@ -84,20 +90,42 @@ function createSchedule(schedule_id, scheduleName, time_ranges, selectedDays) {
             <h3 id="schedule-header">${scheduleName}</h3>
             <p>${days} | ${timePeriod}</p>
              <label class="switch">
-                    <input type="checkbox" class="schedule-switch" checked />
+                    <input type="checkbox" class="schedule-switch" ${
+                        enabled ? "checked" : ""
+                    }/>
                     <span class="slider round"></span>
                 </label>
             <button class="deleteBtn">Delete</button>
         `;
-
     // Додавання кнопки видалення
     const deleteBtn = newListItem.querySelector(".deleteBtn");
     deleteBtn.addEventListener("click", () => {
         deleteSchedule(newListItem);
     });
+    const switchBtn = newListItem.querySelector(".schedule-switch");
+    switchBtn.addEventListener("change", () => {
+        updateScheduleEnableState(schedule_id, switchBtn.checked);
+    });
 
     // Додавання запису в список
     scheduleList.appendChild(newListItem);
+}
+
+function updateScheduleEnableState(schedule_id, enabled) {
+    fetch(`/schedules/${schedule_id}`, {
+        method: "PUT",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+            enabled: enabled,
+        }),
+    })
+        .then((response) => response.json())
+        .then((data) => {
+            console.log("Response from server:", data);
+        })
+        .catch((error) => console.error("Error:", error));
 }
 
 // JavaScript для додавання запису та видалення
@@ -117,9 +145,9 @@ document.addEventListener("DOMContentLoaded", async function () {
     const schedulesData = await loadSchedulesFromServer(1);
     console.log("schedulesData: ", schedulesData);
     schedulesData.forEach((schedule) => {
-        const { schedule_id, name, days, time_ranges } = schedule;
+        const { schedule_id, name, days, time_ranges, enabled } = schedule;
 
-        createSchedule(schedule_id, name, time_ranges, days);
+        createSchedule(schedule_id, name, time_ranges, days, enabled);
     });
 
     // Placeholder data for test
@@ -256,13 +284,22 @@ addTimerangeBtn.addEventListener("click", () => {
     });
 });
 
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", async () => {
     const lightResponseSwitch = document.getElementById("lightResponseSwitch");
     const scheduleList = document.getElementById("scheduleList");
+    const circularSlider = document.querySelector(".circular-slider");
 
     if (!scheduleList) {
         console.error("scheduleList element not found");
         return;
+    }
+    const lightResponseState =
+        (await getLampDataFromServer()).mode === Mode.AUTOMATIC;
+
+    if (lightResponseState) {
+        lightResponseSwitch.checked = lightResponseState;
+        circularSlider.classList.add("disabled");
+        scheduleList.classList.add("disabled");
     }
 
     // Light Response Mode обробник
@@ -276,7 +313,6 @@ document.addEventListener("DOMContentLoaded", function () {
         addStatsToDB(currentLampId, action, brightness);
 
         // Керуємо станом Circular Slider
-        const circularSlider = document.querySelector(".circular-slider");
         circularSlider.classList.toggle("disabled");
         scheduleList.classList.toggle("disabled");
     });

@@ -109,22 +109,16 @@ void connectToWiFi() {
 
 
 void sendGETRequest() {
-
-
-    // Формуємо команду для підключення
     snprintf(connectCmd, sizeof(connectCmd), "AT+CIPSTART=\"TCP\",\"%s\",5000\r\n", SERVER_IP);
     HAL_UART_Transmit(&huart2, (uint8_t *)connectCmd, strlen(connectCmd), HAL_MAX_DELAY);
 
-    // Формуємо GET-запит
     snprintf(connectCmd, sizeof(connectCmd),
              "GET /jsonrequest HTTP/1.1\r\nHost: %s\r\n\r\n", SERVER_IP);
 
-    // Надсилаємо AT-команду для початку передачі
     snprintf(tempBuff, sizeof(tempBuff), "AT+CIPSEND=%d\r\n", strlen(connectCmd));
     HAL_UART_Transmit(&huart2, (uint8_t *)tempBuff, strlen(tempBuff), HAL_MAX_DELAY);
     HAL_Delay(100);
 
-    // Надсилаємо запит
     HAL_UART_Transmit(&huart2, (uint8_t *)connectCmd, strlen(connectCmd), HAL_MAX_DELAY);
 	HAL_UART_Receive(&huart2, rxBuffer, 2000, 300);
 
@@ -166,8 +160,10 @@ void sendGETRequest() {
        _power_state = power_state->valueint;
 
        cJSON *brightness = cJSON_GetObjectItemCaseSensitive(json, "brightness");
-       _previous_brightness = _brightness;
-       _brightness = brightness->valueint;
+       if((brightness->valueint <= 100) && (brightness->valueint >= 0)) {
+    	   _previous_brightness = _brightness;
+       	   _brightness = brightness->valueint;
+       }
 
        // delete the JSON object
        cJSON_Delete(json);
@@ -599,35 +595,25 @@ void StartDefaultTask(void const * argument)
 	  if(_mode == 1) {
 
 		  voltage = Read_ADC_To_Volts(&hadc1);
-		  (voltage >= 2.75f) ? HAL_GPIO_WritePin(GPIOB, GPIO_PIN_10, GPIO_PIN_RESET) : HAL_GPIO_WritePin(GPIOB, GPIO_PIN_10, GPIO_PIN_SET);
+		  (voltage >= 2.75f) ? __HAL_TIM_SET_COMPARE(&htim2,TIM_CHANNEL_2, 0) : __HAL_TIM_SET_COMPARE(&htim2,TIM_CHANNEL_2, 620);
 		  osDelay(100);
 	  } else if(_mode == 0) {
 		  if(_power_state) {
-//			  if(_brightness != _previous_brightness) {
-////				  int inc = 0;
-////				  _brightness > _previous_brightness ? (inc = 1) : (inc = -1);
-////
-////				  for(int i = _previous_brightness; i != _brightness; i + inc) {
-////					  __HAL_TIM_SET_COMPARE(&htim2,TIM_CHANNEL_2, i * 6);
-////					  osDelay(50);
-////				  }
-//
-//				  if(_brightness > _previous_brightness) {
-//					  for(int i = _previous_brightness; i <= _brightness; i++) {
-//						  __HAL_TIM_SET_COMPARE(&htim2,TIM_CHANNEL_2, i * 6);
-//						  osDelay(50);
-//					  }
-//				  } else {
-//					  for(int i = _previous_brightness; i >= _brightness; i--) {
-//					  	__HAL_TIM_SET_COMPARE(&htim2,TIM_CHANNEL_2, i * 6);
-//					  	osDelay(50);
-//				}
-//				  }
-//
-//				   _previous_brightness = _brightness;
-//			  } else {
+			  if(_brightness != _previous_brightness) {
+				  int inc = 0;
+				  _brightness > _previous_brightness ? (inc = 1) : (inc = -1);
+
+				  for(int i = _previous_brightness; i != _brightness; i += inc) {
+					  __HAL_TIM_SET_COMPARE(&htim2,TIM_CHANNEL_2, i * 6);
+
+					    snprintf(tempBuff, sizeof(tempBuff), "B=%d\r\n", i);
+
+					  UART_Send_String(tempBuff);
+					  osDelay(20);
+				  }
+			  } else {
 				  __HAL_TIM_SET_COMPARE(&htim2,TIM_CHANNEL_2, _brightness * 6);
-			  //}
+			  }
 		  } else {
 			  __HAL_TIM_SET_COMPARE(&htim2,TIM_CHANNEL_2, 0);
 		  }
@@ -677,7 +663,7 @@ void StartUARTTask(void const * argument)
   /* Infinite loop */
   for(;;)
   {
-	  sendGETRequest();
+	sendGETRequest();
     osDelay(100);
   }
   /* USER CODE END StartUARTTask */

@@ -17,12 +17,14 @@
     border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     max-width: 500px;
-    overflow-y: scroll;
+    width: 100%;
+    overflow-y: auto;
     max-height: 80vh;
 }
 
 .schedule {
     margin-top: 20px;
+    width: 100%;
 }
 
 .schedule ul {
@@ -39,7 +41,7 @@
 }
 
 .schedule li h3 {
-    font-size: 16px;
+    font-size: 20px;
     font-weight: bold;
 }
 
@@ -59,7 +61,7 @@ h1 {
 
 label {
     display: block;
-    margin-bottom: 5px;
+    /* margin-bottom: 5px; */
     font-size: 14px;
     color: #555;
 }
@@ -132,7 +134,7 @@ label {
     display: none;
 }
 
-.checkbox-container .checkmark {
+.checkmark {
     width: 40px;
     height: 40px;
     border-radius: 50%;
@@ -140,7 +142,7 @@ label {
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: 20px;
+    font-size: 14px;
     font-weight: bold;
     color: #333;
     background-color: #fff;
@@ -148,31 +150,37 @@ label {
     transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-.checkbox-container input:checked + .checkmark {
+.checkmark.small {
+    font-size: 12px;
+    width: 40px;
+    height: 24px;
+}
+
+input:checked + .checkmark {
     background-color: #333;
     color: white;
 }
 
-.checkbox-container .checkmark[data-day="monday"]::after {
-    content: "П";
+.checkmark[data-day="monday"]::after {
+    content: "Mon";
 }
-.checkbox-container .checkmark[data-day="tuesday"]::after {
-    content: "В";
+.checkmark[data-day="tuesday"]::after {
+    content: "Tue";
 }
-.checkbox-container .checkmark[data-day="wednesday"]::after {
-    content: "С";
+.checkmark[data-day="wednesday"]::after {
+    content: "Wed";
 }
-.checkbox-container .checkmark[data-day="thursday"]::after {
-    content: "Ч";
+.checkmark[data-day="thursday"]::after {
+    content: "Thu";
 }
-.checkbox-container .checkmark[data-day="friday"]::after {
-    content: "П";
+.checkmark[data-day="friday"]::after {
+    content: "Fri";
 }
-.checkbox-container .checkmark[data-day="saturday"]::after {
-    content: "С";
+.checkmark[data-day="saturday"]::after {
+    content: "Sat";
 }
-.checkbox-container .checkmark[data-day="sunday"]::after {
-    content: "Н";
+.checkmark[data-day="sunday"]::after {
+    content: "Sun";
 }
 
 /* Стилі для панелі додавання */
@@ -226,7 +234,7 @@ label {
 }
 
 .schedule li p {
-    font-size: 14px;
+    font-size: 16px;
 }
 
 .deleteBtn {
@@ -236,6 +244,7 @@ label {
     padding: 5px 10px;
     border-radius: 4px;
     cursor: pointer;
+    margin-bottom: 5px;
 }
 
 .deleteBtn:hover {
@@ -287,13 +296,50 @@ label {
 }
 
 .schedule-header {
+    font-size: 20px;
+    margin-bottom: 8px;
+}
+
+.schedule_item {
     display: flex;
     justify-content: space-between;
+}
+
+.schedule_body {
+    text-align: left;
+}
+
+.schedule_days {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.schedule_days .checkmark {
+    margin-bottom: 6px;
+}
+
+.schedule_days .checkmark:not(:last-child) {
+    margin-right: 6px;
+}
+
+.schedule_times span {
+    white-space: nowrap;
+}
+
+.schedule_btns {
+    display: flex;
+    flex-direction: column;
     align-items: center;
+    justify-content: space-between;
+}
+
+.schedule_empty {
+    font-size: 30px;
+    color: #cfcfcf;
 }
 
 .toggle-container {
-    margin-top: 30px;
+    /* margin-top: 30px; */
     display: flex;
     align-items: center;
 }
@@ -303,7 +349,7 @@ label {
     display: inline-block;
     width: 34px;
     height: 20px;
-    margin-left: 10px;
+    /* margin-left: 10px; */
 }
 
 .switch input {

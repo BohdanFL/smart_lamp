@@ -1,6 +1,8 @@
 let timerangesCount = 0;
 const addTimerangeBtn = document.getElementById("addTimerangeBtn");
 const timerangeForm = document.getElementById("timerange-form");
+const scheduleEmpty = document.querySelector(".schedule_empty");
+const scheduleList = document.getElementById("scheduleList");
 
 async function loadSchedulesFromServer(lamp_id = 1) {
     try {
@@ -52,6 +54,9 @@ function deleteSchedule(element) {
 
     deleteScheduleOnServer(schedule_id).then(() => {
         element.remove();
+        if (!scheduleList.childElementCount) {
+            scheduleEmpty.hidden = false;
+        }
     });
 }
 
@@ -91,7 +96,7 @@ function createSchedule(
     const newListItem = document.createElement("li");
     newListItem.classList.add("schedule_item");
     newListItem.setAttribute("data-id", schedule_id);
-    // <p>${days} | ${timePeriod}</p>
+    console.log(scheduleName);
     newListItem.innerHTML = `
             <div class="schedule_body">
                 <h3 class="schedule-header">${scheduleName}</h3>
@@ -143,7 +148,6 @@ function updateScheduleEnableState(schedule_id, enabled) {
 document.addEventListener("DOMContentLoaded", async function () {
     const addButton = document.getElementById("addButton");
     const cancelButton = document.querySelector(".cancelBtn");
-    const scheduleList = document.getElementById("scheduleList");
     const addPanel = document.querySelector(".addPanel");
     const addButtonPanel = document.getElementById("addButtonPanel");
     const checkboxGroup = document.querySelector(".checkbox-group");
@@ -162,12 +166,12 @@ document.addEventListener("DOMContentLoaded", async function () {
     });
 
     // Placeholder data for test
-    blockNameInput.value = "Winter Time";
-    checkboxes.forEach((checkbox) => {
-        checkbox.checked = true;
-    });
-    startTime.value = "16:00";
-    endTime.value = "20:00";
+    // blockNameInput.value = "Winter Time";
+    // checkboxes.forEach((checkbox) => {
+    //     checkbox.checked = true;
+    // });
+    // startTime.value = "16:00";
+    // endTime.value = "20:00";
 
     //Timeranges reading
     let time_ranges = [];
@@ -175,7 +179,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     console.log(time_ranges);
 
     // Функція для додавання запису
-    addButton.addEventListener("click", () => {
+    addButton.addEventListener("click", async () => {
         const selectedDays = [];
         const time_ranges = [];
 
@@ -224,12 +228,13 @@ document.addEventListener("DOMContentLoaded", async function () {
             return;
         }
         console.log(time_ranges);
-        createScheduleOnServer(
+        await createScheduleOnServer(
             1,
             blockNameInput.value,
             selectedDays,
             time_ranges
         ).then((schedule_id) => {
+            console.log(blockNameInput.value);
             createSchedule(
                 schedule_id,
                 blockNameInput.value,
@@ -239,16 +244,18 @@ document.addEventListener("DOMContentLoaded", async function () {
         });
 
         // Очищення полів після додавання
-        // blockNameInput.value = "";
-        // startTime.value = "";
-        // endTime.value = "";
-        // checkboxes.forEach((checkbox) => {
-        //     checkbox.checked = false;
-        // });
+        blockNameInput.value = "";
+        startTime.value = "";
+        endTime.value = "";
+        checkboxes.forEach((checkbox) => {
+            checkbox.checked = false;
+        });
 
         // Закриття панелі
         addPanel.style.display = "none";
         addButtonPanel.style.display = "block"; // Показуємо кнопку Add знову
+
+        scheduleEmpty.hidden = true;
     });
 
     // Кнопка для скасування

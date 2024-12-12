@@ -24,6 +24,7 @@
 
 .schedule {
     margin-top: 20px;
+    width: 100%;
 }
 
 .schedule ul {
@@ -310,6 +311,10 @@ input:checked + .checkmark {
 
 .schedule_days {
     display: flex;
+    flex-wrap: wrap;
+}
+
+.schedule_days .checkmark {
     margin-bottom: 6px;
 }
 
@@ -326,6 +331,11 @@ input:checked + .checkmark {
     flex-direction: column;
     align-items: center;
     justify-content: space-between;
+}
+
+.schedule_empty {
+    font-size: 30px;
+    color: #cfcfcf;
 }
 
 .toggle-container {

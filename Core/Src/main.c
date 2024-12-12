@@ -18,8 +18,10 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include <string.h>
+#include "cmsis_os.h"
 #include <stdio.h>
+#include <string.h>
+#include "cJSON.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -33,9 +35,9 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define SERVER_IP "192.168.0.6"
-#define SSID "notlamp"
-#define PASS "0996330969"
+#define SERVER_IP "192.168.0.106"
+#define SSID "TP-Link_82F6"
+#define PASS "48067706"
 #define ADC_RESOLUTION 4096
 #define VREF 3.3
 
@@ -49,9 +51,13 @@
 /* Private variables ---------------------------------------------------------*/
 ADC_HandleTypeDef hadc1;
 
+TIM_HandleTypeDef htim2;
+
 UART_HandleTypeDef huart1;
 UART_HandleTypeDef huart2;
 
+osThreadId defaultTaskHandle;
+osThreadId UARTTaskHandle;
 /* USER CODE BEGIN PV */
 
 /* USER CODE END PV */
@@ -62,7 +68,21 @@ static void MX_GPIO_Init(void);
 static void MX_USART1_UART_Init(void);
 static void MX_USART2_UART_Init(void);
 static void MX_ADC1_Init(void);
+static void MX_TIM2_Init(void);
+void StartDefaultTask(void const * argument);
+void StartUARTTask(void const * argument);
+
 /* USER CODE BEGIN PFP */
+char rxBuffer[2000];
+char connectCmd[100];
+char tempBuff[200];
+char jsonBuff[500];
+uint8_t ATisOK;
+
+volatile int _power_state = 0;
+volatile int _previous_brightness = -1;
+volatile int _brightness = 0;
+volatile int _mode = 0;
 
 /* USER CODE END PFP */
 
@@ -72,43 +92,6 @@ static void MX_ADC1_Init(void);
 char uartBuffer[1024];
 volatile uint16_t uartIndex = 0;
 volatile uint8_t uartReceivedFlag = 0;
-
-void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
-    if (huart->Instance == USART2) {
-        // Додаємо символ до буфера
-        HAL_UART_Receive_IT(&huart2, (uint8_t *)&uartBuffer[uartIndex], 1);
-        if (uartBuffer[uartIndex] == '\n') { // Кінець рядка
-            uartReceivedFlag = 1;
-        } else if (uartIndex < sizeof(uartBuffer) - 1) {
-            uartIndex++;
-        }
-    }
-}
-
-
-void receiveResponse() {
-    uartIndex = 0; // Очистка індексу
-    memset(uartBuffer, 0, sizeof(uartBuffer));
-    uartReceivedFlag = 0;
-
-    // Запускаємо UART у режимі переривання
-    HAL_UART_Receive_IT(&huart2, (uint8_t *)&uartBuffer[uartIndex], 1);
-
-    // Чекаємо, поки отримаємо відповідь
-    uint32_t startTime = HAL_GetTick();
-    while (!uartReceivedFlag && (HAL_GetTick() - startTime < 5000)) {
-        // Чекаємо до 5 секунд
-    }
-
-    // Перевірка завершення
-    if (uartReceivedFlag) {
-        UART_Send_String("Received: ");
-        UART_Send_String(uartBuffer); // Виводимо відповідь
-    } else {
-        UART_Send_String("Timeout waiting for response\n");
-    }
-}
-
 
 void sendCommand(const char *cmd) {
 
@@ -126,51 +109,69 @@ void connectToWiFi() {
 
 
 void sendGETRequest() {
-    char connectCmd[128];
-    char getRequest[256];
-    char responseBuffer[1024]; // Буфер для зчитування відповіді
-    int responseIndex = 0;
+
 
     // Формуємо команду для підключення
     snprintf(connectCmd, sizeof(connectCmd), "AT+CIPSTART=\"TCP\",\"%s\",5000\r\n", SERVER_IP);
-    sendCommand(connectCmd);
-    HAL_Delay(1000);
+    HAL_UART_Transmit(&huart2, (uint8_t *)connectCmd, strlen(connectCmd), HAL_MAX_DELAY);
 
     // Формуємо GET-запит
-    snprintf(getRequest, sizeof(getRequest),
+    snprintf(connectCmd, sizeof(connectCmd),
              "GET /jsonrequest HTTP/1.1\r\nHost: %s\r\n\r\n", SERVER_IP);
 
     // Надсилаємо AT-команду для початку передачі
-    char cipSendCmd[32];
-    snprintf(cipSendCmd, sizeof(cipSendCmd), "AT+CIPSEND=%d\r\n", strlen(getRequest));
-    sendCommand(cipSendCmd);
+    snprintf(tempBuff, sizeof(tempBuff), "AT+CIPSEND=%d\r\n", strlen(connectCmd));
+    HAL_UART_Transmit(&huart2, (uint8_t *)tempBuff, strlen(tempBuff), HAL_MAX_DELAY);
     HAL_Delay(100);
 
     // Надсилаємо запит
-    sendCommand(getRequest);
+    HAL_UART_Transmit(&huart2, (uint8_t *)connectCmd, strlen(connectCmd), HAL_MAX_DELAY);
+	HAL_UART_Receive(&huart2, rxBuffer, 2000, 300);
 
-    //int a = 0;
 
-    // Чекаємо і зчитуємо відповідь
-    uint32_t startTime = HAL_GetTick(); // Запам'ятовуємо час початку зчитування
-    while ((HAL_GetTick() - startTime) < 3000) { // Чекаємо до 2 секунд
-        uint8_t byte;
-        if (HAL_UART_Receive(&huart2, &byte, 1, 100) == HAL_OK) {
-//        	a++;
-            responseBuffer[responseIndex++] = byte;
-            if (responseIndex >= sizeof(responseBuffer) - 1) break; // Захист від переповнення буфера
-            startTime = HAL_GetTick(); // Оновлюємо час при отриманні байта
-        }
+
+
+	memset(jsonBuff, 0, sizeof(jsonBuff));
+
+    int start = 0;
+    int jsonIndex = 0;
+    for(int i = 0; i < 2000; i++) {
+    	if(rxBuffer[i] == '{') start = 1;
+    	if(start) {
+    		jsonBuff[jsonIndex] = rxBuffer[i];
+    	    //HAL_UART_Transmit(&huart1, (uint8_t *)jsonBuff[jsonIndex], 1, HAL_MAX_DELAY);
+    	    jsonIndex++;
+    	}
+    	if(rxBuffer[i] == '}') break;
     }
-    //sprintf(responseBuffer, "%d", a);
-    responseBuffer[responseIndex] = '\0'; // Завершення рядка
 
-    // Виводимо відповідь у UART1 для діагностики
-    UART_Send_String("Response from server:\n");
-    UART_Send_String(responseBuffer);
+    UART_Send_String("Response from server:\r\n");
+    UART_Send_String(jsonBuff);
 
+
+    cJSON *json = cJSON_Parse(jsonBuff);
+       if (json == NULL) {
+           const char *error_ptr = cJSON_GetErrorPtr();
+           if (error_ptr != NULL) {
+           }
+           cJSON_Delete(json);
+       }
+
+       // access the JSON data
+
+       cJSON *mode = cJSON_GetObjectItemCaseSensitive(json, "mode");
+       _mode = mode->valueint;
+
+       cJSON *power_state = cJSON_GetObjectItemCaseSensitive(json, "power_state");
+       _power_state = power_state->valueint;
+
+       cJSON *brightness = cJSON_GetObjectItemCaseSensitive(json, "brightness");
+       _previous_brightness = _brightness;
+       _brightness = brightness->valueint;
+
+       // delete the JSON object
+       cJSON_Delete(json);
 }
-
 
 
 void sendPostRequest(const char *value) {
@@ -271,30 +272,61 @@ int main(void)
   MX_USART1_UART_Init();
   MX_USART2_UART_Init();
   MX_ADC1_Init();
+  MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
 
-  UART_Send_String("Connecting to Wi-Fi\n");
-  connectToWiFi();
+//  UART_Send_String("Connecting to Wi-Fi\n");
+//  connectToWiFi();
+//  //receiveResponse();
+//  UART_Send_String("Sending GET request\n");
+//  sendGETRequest();
+//  //receiveResponse();
+//  UART_Send_String("Sending POST request\n");
+//  sendPostRequest("Amogus");
   //receiveResponse();
-  UART_Send_String("Sending GET request\n");
-  sendGETRequest();
-  //receiveResponse();
-  UART_Send_String("Sending POST request\n");
-  sendPostRequest("Amogus");
-  //receiveResponse();
-  float voltage;
 
   /* USER CODE END 2 */
+
+  /* USER CODE BEGIN RTOS_MUTEX */
+  /* add mutexes, ... */
+  /* USER CODE END RTOS_MUTEX */
+
+  /* USER CODE BEGIN RTOS_SEMAPHORES */
+  /* add semaphores, ... */
+  /* USER CODE END RTOS_SEMAPHORES */
+
+  /* USER CODE BEGIN RTOS_TIMERS */
+  /* start timers, add new ones, ... */
+  /* USER CODE END RTOS_TIMERS */
+
+  /* USER CODE BEGIN RTOS_QUEUES */
+  /* add queues, ... */
+  /* USER CODE END RTOS_QUEUES */
+
+  /* Create the thread(s) */
+  /* definition and creation of defaultTask */
+  osThreadDef(defaultTask, StartDefaultTask, osPriorityNormal, 0, 128);
+  defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
+
+  /* definition and creation of UARTTask */
+  osThreadDef(UARTTask, StartUARTTask, osPriorityNormal, 0, 128);
+  UARTTaskHandle = osThreadCreate(osThread(UARTTask), NULL);
+
+  /* USER CODE BEGIN RTOS_THREADS */
+  /* add threads, ... */
+  /* USER CODE END RTOS_THREADS */
+
+  /* Start scheduler */
+  osKernelStart();
+
+  /* We should never get here as control is now taken by the scheduler */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
     /* USER CODE END WHILE */
-	  voltage = Read_ADC_To_Volts(&hadc1);
-	  (voltage >= 2.75f) ? HAL_GPIO_WritePin(GPIOB, GPIO_PIN_10, GPIO_PIN_RESET) : HAL_GPIO_WritePin(GPIOB, GPIO_PIN_10, GPIO_PIN_SET);
 
-	  sendGETRequest();
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
@@ -387,6 +419,65 @@ static void MX_ADC1_Init(void)
   /* USER CODE BEGIN ADC1_Init 2 */
 
   /* USER CODE END ADC1_Init 2 */
+
+}
+
+/**
+  * @brief TIM2 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM2_Init(void)
+{
+
+  /* USER CODE BEGIN TIM2_Init 0 */
+
+  /* USER CODE END TIM2_Init 0 */
+
+  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
+  TIM_MasterConfigTypeDef sMasterConfig = {0};
+  TIM_OC_InitTypeDef sConfigOC = {0};
+
+  /* USER CODE BEGIN TIM2_Init 1 */
+
+  /* USER CODE END TIM2_Init 1 */
+  htim2.Instance = TIM2;
+  htim2.Init.Prescaler = 127;
+  htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim2.Init.Period = 625;
+  htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_Base_Init(&htim2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+  if (HAL_TIM_ConfigClockSource(&htim2, &sClockSourceConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  if (HAL_TIM_PWM_Init(&htim2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim2, &sMasterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sConfigOC.OCMode = TIM_OCMODE_PWM1;
+  sConfigOC.Pulse = 0;
+  sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
+  sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
+  if (HAL_TIM_PWM_ConfigChannel(&htim2, &sConfigOC, TIM_CHANNEL_2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM2_Init 2 */
+
+  /* USER CODE END TIM2_Init 2 */
+  HAL_TIM_MspPostInit(&htim2);
 
 }
 
@@ -488,6 +579,130 @@ static void MX_GPIO_Init(void)
 /* USER CODE BEGIN 4 */
 
 /* USER CODE END 4 */
+
+/* USER CODE BEGIN Header_StartDefaultTask */
+/**
+  * @brief  Function implementing the defaultTask thread.
+  * @param  argument: Not used
+  * @retval None
+  */
+/* USER CODE END Header_StartDefaultTask */
+void StartDefaultTask(void const * argument)
+{
+  /* USER CODE BEGIN 5 */
+	float voltage = 0;
+	HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_2);
+  /* Infinite loop */
+  for(;;)
+  {
+
+	  if(_mode == 1) {
+
+		  voltage = Read_ADC_To_Volts(&hadc1);
+		  (voltage >= 2.75f) ? HAL_GPIO_WritePin(GPIOB, GPIO_PIN_10, GPIO_PIN_RESET) : HAL_GPIO_WritePin(GPIOB, GPIO_PIN_10, GPIO_PIN_SET);
+		  osDelay(100);
+	  } else if(_mode == 0) {
+		  if(_power_state) {
+//			  if(_brightness != _previous_brightness) {
+////				  int inc = 0;
+////				  _brightness > _previous_brightness ? (inc = 1) : (inc = -1);
+////
+////				  for(int i = _previous_brightness; i != _brightness; i + inc) {
+////					  __HAL_TIM_SET_COMPARE(&htim2,TIM_CHANNEL_2, i * 6);
+////					  osDelay(50);
+////				  }
+//
+//				  if(_brightness > _previous_brightness) {
+//					  for(int i = _previous_brightness; i <= _brightness; i++) {
+//						  __HAL_TIM_SET_COMPARE(&htim2,TIM_CHANNEL_2, i * 6);
+//						  osDelay(50);
+//					  }
+//				  } else {
+//					  for(int i = _previous_brightness; i >= _brightness; i--) {
+//					  	__HAL_TIM_SET_COMPARE(&htim2,TIM_CHANNEL_2, i * 6);
+//					  	osDelay(50);
+//				}
+//				  }
+//
+//				   _previous_brightness = _brightness;
+//			  } else {
+				  __HAL_TIM_SET_COMPARE(&htim2,TIM_CHANNEL_2, _brightness * 6);
+			  //}
+		  } else {
+			  __HAL_TIM_SET_COMPARE(&htim2,TIM_CHANNEL_2, 0);
+		  }
+	  }
+	  osDelay(100);
+  }
+  /* USER CODE END 5 */
+}
+
+/* USER CODE BEGIN Header_StartUARTTask */
+/**
+* @brief Function implementing the UARTTask thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_StartUARTTask */
+void StartUARTTask(void const * argument)
+{
+  /* USER CODE BEGIN StartUARTTask */
+	int attempt = 1;
+
+	UART_Send_String("Connecting to Wi-Fi\r\n");
+	snprintf(tempBuff, sizeof(tempBuff), "SSID: %s\r\nPassword: %s\r\n", SSID, PASS);
+	UART_Send_String(tempBuff);
+
+	snprintf(connectCmd, sizeof(connectCmd), "AT+CWJAP=\"%s\",\"%s\"\r\n", SSID, PASS);
+
+	ATisOK = 0;
+	while(!ATisOK) {
+		snprintf(tempBuff, sizeof(tempBuff), "Attempt number: %d\r\n", attempt);
+		UART_Send_String(tempBuff);
+		memset(rxBuffer, 0, sizeof(rxBuffer));
+		HAL_UART_Transmit(&huart2, (uint8_t *)connectCmd, strlen(connectCmd), 1000);
+		HAL_UART_Receive(&huart2, rxBuffer, 2000, 2000);
+
+		if(strstr((char *)rxBuffer,"OK")){
+		      ATisOK = 1;
+		}
+
+		osDelay(500);
+		attempt++;
+	}
+
+	UART_Send_String("Connecting to Wi-Fi is successful!\r\n");
+
+
+  /* Infinite loop */
+  for(;;)
+  {
+	  sendGETRequest();
+    osDelay(100);
+  }
+  /* USER CODE END StartUARTTask */
+}
+
+/**
+  * @brief  Period elapsed callback in non blocking mode
+  * @note   This function is called  when TIM1 interrupt took place, inside
+  * HAL_TIM_IRQHandler(). It makes a direct call to HAL_IncTick() to increment
+  * a global variable "uwTick" used as application time base.
+  * @param  htim : TIM handle
+  * @retval None
+  */
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+  /* USER CODE BEGIN Callback 0 */
+
+  /* USER CODE END Callback 0 */
+  if (htim->Instance == TIM1) {
+    HAL_IncTick();
+  }
+  /* USER CODE BEGIN Callback 1 */
+
+  /* USER CODE END Callback 1 */
+}
 
 /**
   * @brief  This function is executed in case of error occurrence.

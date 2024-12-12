@@ -95,11 +95,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     const chartContainers = document.querySelectorAll(".chart-container"); // Вибір усіх контейнерів графіків
     const monthDropdown = document.getElementById("monthDropdown");
     const dayDropdown = document.getElementById("dayDropdown");
-
     const circumference = 2 * Math.PI * 90; // Довжина окружності
     brightness = (await getLampDataFromServer()).brightness || 0; // Початкова яскравість
     let dragging = false; // Чи тягне користувач повзунок
     let lastBrightness = brightness; // Останнє значення яскравості
+    let lastUserBrightness = brightness;
 
     const today = new Date();
     const currentMonth = today.getMonth() + 1; // Місяці починаються з 0

@@ -165,7 +165,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             programmaticTab.classList.remove("black");
             statisticTab.classList.remove("black");
 
-            // lightResponseLabel.style.color = "white";
+            lightResponseLabel.style.color = "white";
             monthLabel.style.color = "rgb(255,255,255)";
             dayLabel.style.color = "rgb(255,255,255)";
             [dayDropdown, monthDropdown].forEach((dropdown) => {
@@ -181,7 +181,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             programmaticTab.classList.remove("white");
             statisticTab.classList.remove("white");
 
-            // lightResponseLabel.style.color = "black";
+            lightResponseLabel.style.color = "black";
             monthLabel.style.color = "rgb(0,0,0)";
             dayLabel.style.color = "rgb(0,0,0)";
             [dayDropdown, monthDropdown].forEach((dropdown) => {

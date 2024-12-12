@@ -2,7 +2,6 @@ let timerangesCount = 0;
 const addTimerangeBtn = document.getElementById("addTimerangeBtn");
 const timerangeForm = document.getElementById("timerange-form");
 
-
 async function loadSchedulesFromServer(lamp_id = 1) {
     try {
         const response = await fetch(`/lamps/${lamp_id}/schedules`);
@@ -70,27 +69,44 @@ async function deleteScheduleOnServer(schedule_id) {
         .catch((error) => console.error("Error:", error));
 }
 
-function createSchedule(schedule_id, scheduleName, time_ranges, selectedDays) {
+function createSchedule(
+    schedule_id,
+    scheduleName,
+    time_ranges,
+    selectedDays,
+    enabled = false
+) {
     // Формування назви запису
-    let timePeriod = "";
-    for (i = 0; i < time_ranges.length; i++) {
-        timePeriod += `З: ${time_ranges[i].start_time} По: ${time_ranges[i].end_time}; `;
+    let timePeriod = `<span>${time_ranges[0].start_time} - ${time_ranges[0].end_time}</span>`;
+    for (i = 1; i < time_ranges.length; i++) {
+        timePeriod += ` <strong>|</strong> <span>${time_ranges[i].start_time} - ${time_ranges[i].end_time}</span> `;
     }
 
-    const days = selectedDays.join(", ").toUpperCase();
+    let days = "";
+    for (i = 0; i < selectedDays.length; i++) {
+        days += `<span class="checkmark small" data-day="${selectedDays[i]}"></span>`;
+    }
+
     // Створення нового елементу запису
     const newListItem = document.createElement("li");
     newListItem.classList.add("schedule_item");
     newListItem.setAttribute("data-id", schedule_id);
     // <p>${days} | ${timePeriod}</p>
     newListItem.innerHTML = `
-            <h3 id="schedule-header">${scheduleName}</h3>
-            <p>${days} | ${timePeriod}</p>
-             <label class="switch">
-                    <input type="checkbox" class="schedule-switch" checked />
+            <div class="schedule_body">
+                <h3 class="schedule-header">${scheduleName}</h3>
+                <p class="schedule_days">${days}</p>
+                <p class="schedule_times">${timePeriod}</p>
+            </div>
+            <div class="schedule_btns">
+                <button class="deleteBtn">Delete</button>
+                <label class="switch">
+                    <input type="checkbox" class="schedule-switch" ${
+                        enabled ? "checked" : ""
+                    }>
                     <span class="slider round"></span>
                 </label>
-            <button class="deleteBtn">Delete</button>
+            </div>
         `;
     // Додавання кнопки видалення
     const deleteBtn = newListItem.querySelector(".deleteBtn");
@@ -140,9 +156,9 @@ document.addEventListener("DOMContentLoaded", async function () {
     const schedulesData = await loadSchedulesFromServer(1);
     console.log("schedulesData: ", schedulesData);
     schedulesData.forEach((schedule) => {
-        const { schedule_id, name, days, time_ranges } = schedule;
+        const { schedule_id, name, days, time_ranges, enabled } = schedule;
 
-        createSchedule(schedule_id, name, time_ranges, days);
+        createSchedule(schedule_id, name, time_ranges, days, enabled);
     });
 
     // Placeholder data for test
@@ -207,7 +223,6 @@ document.addEventListener("DOMContentLoaded", async function () {
             alert("Please, fill in all fields and select the day.");
             return;
         }
-        
         console.log(time_ranges);
         createScheduleOnServer(
             1,
@@ -249,8 +264,8 @@ document.addEventListener("DOMContentLoaded", async function () {
     });
 });
 
-
 // Timeranges frontend
+
 addTimerangeBtn.addEventListener("click", () => {
     timerangesCount++;
 
@@ -280,13 +295,22 @@ addTimerangeBtn.addEventListener("click", () => {
     });
 });
 
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", async () => {
     const lightResponseSwitch = document.getElementById("lightResponseSwitch");
     const scheduleList = document.getElementById("scheduleList");
+    const circularSlider = document.querySelector(".circular-slider");
 
     if (!scheduleList) {
         console.error("scheduleList element not found");
         return;
+    }
+    const lightResponseState =
+        (await getLampDataFromServer()).mode === Mode.AUTOMATIC;
+
+    if (lightResponseState) {
+        lightResponseSwitch.checked = lightResponseState;
+        circularSlider.classList.add("disabled");
+        scheduleList.classList.add("disabled");
     }
 
     // Light Response Mode обробник
@@ -300,7 +324,6 @@ document.addEventListener("DOMContentLoaded", function () {
         addStatsToDB(currentLampId, action, brightness);
 
         // Керуємо станом Circular Slider
-        const circularSlider = document.querySelector(".circular-slider");
         circularSlider.classList.toggle("disabled");
         scheduleList.classList.toggle("disabled");
     });

@@ -17,22 +17,30 @@ body {
     background-color: #f4f4f4;
     padding-top: 60px;
     overflow: hidden;
-    font-family: Arial, sans-serif;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    margin: 0;
-    background-color: #f4f4f4;
-    padding-top: 60px;
-    overflow: hidden;
 }
 
 .container {
-    flex-direction:column;
-    justify-content:center;
+    flex-direction: column;
+    justify-content: center;
     text-align: center;
     position: relative;
+    width: 100%;
+}
+
+#manualMode {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#programmaticMode {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+.lightResponseContainer {
+    margin-bottom: 30px;
 }
 
 #manualMode{
@@ -49,7 +57,6 @@ body {
     position: relative;
     width: 200px;
     height: 200px;
-    pointer-events: auto;
     pointer-events: auto;
 }
 
@@ -79,10 +86,6 @@ body {
 .round-button.dark {
     background-color: #333;
     color: #f0f0f0;
-    background-color: #333;
-    color: #f0f0f0;
-    background-color: #333;
-    color: #f0f0f0;
 }
 
 .slider-ring {
@@ -94,21 +97,9 @@ body {
     border-width: 20px;
     top: 0;
     left: 0;
-    position: absolute;
-    border-width: 20px;
-    top: 0;
-    left: 0;
 }
 
 .slider-thumb {
-    width: 20px;
-    height: 20px;
-    background-color: #666;
-    border-radius: 50%;
-    position: absolute;
-    transform: translate(-50%, -50%);
-    cursor: pointer;
-    z-index: 3;
     width: 20px;
     height: 20px;
     background-color: #666;
@@ -143,41 +134,10 @@ header {
     z-index: 1000; /* Щоб шапка була завжди зверху */
     display: flex;
     justify-content: center;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    background-color: rgba(
-        0,
-        0,
-        0,
-        0
-    ); /* Встановлюємо той самий фон, як і в body */
-    padding: 10px 0;
-    z-index: 1000; /* Щоб шапка була завжди зверху */
-    display: flex;
-    justify-content: center;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    background-color: rgba(
-        0,
-        0,
-        0,
-        0
-    ); /* Встановлюємо той самий фон, як і в body */
-    padding: 10px 0;
-    z-index: 1000; /* Щоб шапка була завжди зверху */
-    display: flex;
-    justify-content: center;
 }
 
 /* Стилі для вкладок */
 .tabs {
-    display: flex;
-    justify-content: center;
-    margin: 0;
     display: flex;
     justify-content: center;
     margin: 0;
@@ -209,15 +169,9 @@ header {
 .tab.active {
     border-bottom: 2px solid;
     transition: border-color 0.3s ease; /* Анімація переходу */
-    border-bottom: 2px solid;
-    transition: border-color 0.3s ease; /* Анімація переходу */
-    border-bottom: 2px solid;
-    transition: border-color 0.3s ease; /* Анімація переходу */
 }
 
 .tab:hover {
-    color: #555;
-    color: #555;
     color: #555;
 }
 
@@ -229,12 +183,6 @@ header {
 
 /* Основний контейнер контенту (без хедера) */
 .container {
-    display: flex;
-    justify-content: center;
-    padding: 20px;
-    display: flex;
-    justify-content: center;
-    padding: 20px;
     display: flex;
     justify-content: center;
     padding: 20px;
@@ -253,8 +201,6 @@ header {
     display: flex;
     justify-content: flex-start;
     align-items: center;
-    margin-bottom: 8px;
-    margin-top: 12px;
     margin-bottom: 8px;
     margin-top: 12px;
     padding-left: 30px;
@@ -276,28 +222,6 @@ header {
     border-radius: 5px;
     border: 1px solid #ccc;
 }
-.day-selector {
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    margin-bottom: 8px;
-    margin-top: 12px;
-    padding-left: 30px;
-}
-
-.day-selector label {
-    margin-right: 10px;
-    font-size: 12px;
-    font-weight: bold;
-}
-
-#dayDropdown {
-    width: 65%;
-    padding: 5px;
-    font-size: 14px;
-    border-radius: 5px;
-    border: 1px solid #ccc;
-}
 
 .charts-container {
     display: flex;
@@ -306,6 +230,7 @@ header {
     background-color: #000; /* Чорний фон */
     border-radius: 10px;
     overflow: hidden;
+    width: 70vw;
 }
 
 .chart-container canvas {
@@ -314,8 +239,59 @@ header {
 
 .chart-container {
     padding: 20px; /* Відступи всередині контейнера */
-    width: 70vw;
     height: 35vh;
+}
+
+.toggle-container.switch {
+    margin: -30px 0 30px;
+    /* cursor: pointer; */
+    display: flex;
+    align-items: center;
+    position: static;
+    width: auto;
+    height: auto;
+}
+
+.toggle-container label {
+    cursor: pointer;
+    line-height: 40px;
+    margin: 0;
+    /* margin-left: 15px; */
+    font-size: 18px;
+    color: #000;
+    font-weight: bold;
+}
+
+.toggle-container .slider {
+    position: relative;
+    width: 120px;
+    height: 40px;
+    display: block;
+    margin: 0 auto;
+}
+.toggle-container .slider::before {
+    width: 34px;
+    height: 34px;
+}
+
+.toggle-container input:checked + .slider:before {
+    transform: translateX(80px);
+}
+
+@media (max-width: 426px) {
+    .tab {
+        font-size: 14px;
+    }
+    .day-selector,
+    .month-selector {
+        padding-left: 0;
+    }
+}
+
+@media (max-width: 767px) {
+    .charts-container {
+        width: 100%;
+    }
 }
 
 @media (max-width: 426px) {

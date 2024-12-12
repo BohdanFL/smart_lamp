@@ -2,6 +2,7 @@ let timerangesCount = 0;
 const addTimerangeBtn = document.getElementById("addTimerangeBtn");
 const timerangeForm = document.getElementById("timerange-form");
 
+
 async function loadSchedulesFromServer(lamp_id = 1) {
     try {
         const response = await fetch(`/lamps/${lamp_id}/schedules`);
@@ -79,7 +80,9 @@ function createSchedule(schedule_id, scheduleName, time_ranges, selectedDays) {
     const days = selectedDays.join(", ").toUpperCase();
     // Створення нового елементу запису
     const newListItem = document.createElement("li");
+    newListItem.classList.add("schedule_item");
     newListItem.setAttribute("data-id", schedule_id);
+    // <p>${days} | ${timePeriod}</p>
     newListItem.innerHTML = `
             <h3 id="schedule-header">${scheduleName}</h3>
             <p>${days} | ${timePeriod}</p>
@@ -89,15 +92,35 @@ function createSchedule(schedule_id, scheduleName, time_ranges, selectedDays) {
                 </label>
             <button class="deleteBtn">Delete</button>
         `;
-
     // Додавання кнопки видалення
     const deleteBtn = newListItem.querySelector(".deleteBtn");
     deleteBtn.addEventListener("click", () => {
         deleteSchedule(newListItem);
     });
+    const switchBtn = newListItem.querySelector(".schedule-switch");
+    switchBtn.addEventListener("change", () => {
+        updateScheduleEnableState(schedule_id, switchBtn.checked);
+    });
 
     // Додавання запису в список
     scheduleList.appendChild(newListItem);
+}
+
+function updateScheduleEnableState(schedule_id, enabled) {
+    fetch(`/schedules/${schedule_id}`, {
+        method: "PUT",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+            enabled: enabled,
+        }),
+    })
+        .then((response) => response.json())
+        .then((data) => {
+            console.log("Response from server:", data);
+        })
+        .catch((error) => console.error("Error:", error));
 }
 
 // JavaScript для додавання запису та видалення
@@ -184,6 +207,7 @@ document.addEventListener("DOMContentLoaded", async function () {
             alert("Please, fill in all fields and select the day.");
             return;
         }
+        
         console.log(time_ranges);
         createScheduleOnServer(
             1,
@@ -225,8 +249,8 @@ document.addEventListener("DOMContentLoaded", async function () {
     });
 });
 
-// Timeranges frontend
 
+// Timeranges frontend
 addTimerangeBtn.addEventListener("click", () => {
     timerangesCount++;
 

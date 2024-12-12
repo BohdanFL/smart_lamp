@@ -5,6 +5,8 @@ from requests import session
 from sqlalchemy import Column, null
 from datetime import datetime, time
 from enum import Enum
+from apscheduler.schedulers.background import BackgroundScheduler
+import atexit
 
 
 class LampMode(Enum):
@@ -62,6 +64,8 @@ class LampSchedules(db.Model):
         'lamp_config.id'), nullable=False)
     name = db.Column(db.String, nullable=False)
     enabled = db.Column(db.Boolean, nullable=False, default=False)
+    # Зберігати 'ON', 'OFF' або None
+    last_action = db.Column(db.String, nullable=True)
     # Зв'язок із днями розкладу
     days = db.relationship('ScheduleDay', backref='schedule',
                            cascade='all, delete-orphan', lazy=True)
@@ -149,12 +153,41 @@ def get_schedules(lamp_id):
             'time_ranges': time_ranges,
             'name': schedule.name,
             'enabled': schedule.enabled,
+            'last_action': schedule.last_action,
         })
 
     return jsonify(result)
 
 
+@app.route('/schedules/<int:schedule_id>', methods=['PUT'])
+def update_schedule(schedule_id):
+    data = request.get_json()  # Отримати JSON-запит
+    schedule = db.session.get(LampSchedules, schedule_id)
+
+    if not schedule:
+        return jsonify({"error": "Schedule not found"}), 404
+
+    # Оновлення стану розкладу
+    schedule.enabled = data.get("enabled", schedule.enabled)
+    schedule.name = data.get("name", schedule.name)
+    # schedule.days = data.get("days", schedule.days)
+    # schedule.time_ranges = data.get("time_ranges", schedule.time_ranges)
+
+    # Збереження змін у базі даних
+    db.session.commit()
+
+    return jsonify({"message": "Schedule updated successfully", "schedule": {
+        "id": schedule.id,
+        "lamp_id": schedule.lamp_id,
+        "name": schedule.name,
+        # "days": schedule.days,
+        # "time_ranges": schedule.time_ranges,
+        "enabled": schedule.enabled
+    }})
+
 # Видалення розкладу за айді
+
+
 @app.route('/schedules/<int:schedule_id>', methods=['DELETE'])
 def delete_schedule(schedule_id):
     schedule = db.session.get(LampSchedules, schedule_id)
@@ -172,14 +205,14 @@ def update_lamp(lamp_id):
         return jsonify({"error": "Lamp not found"}), 404
 
     # Оновлення стану лампочки
-    lamp.power_state = data.get("power_state", lamp.power_state)
+    lamp.power_state = data.get("enabled", lamp.power_state)
     lamp.brightness = data.get("brightness", lamp.brightness)
     lamp.mode = data.get("mode", lamp.mode)
 
     # Збереження змін у базі даних
     db.session.commit()
 
-    return jsonify({"message": "Lamp updated successfully", "lamp": {
+    return jsonify({"message": "Lamp updated successfully", "schedule": {
         "id": lamp.id,
         "power_state": lamp.power_state,
         "brightness": lamp.brightness,
@@ -254,7 +287,57 @@ def page_not_found(e):
     return render_template('404.html'), 404
 
 
+def check_schedules():
+    with app.app_context():  # Створюємо контекст додатку
+        current_time = datetime.now().time()
+        # Наприклад: 'Mon', 'Tue', ...
+        current_day = datetime.now().strftime('%A').lower()
+
+        print(f"Current Day: {current_day}; Current Time: {current_time}")
+        schedules = LampSchedules.query.filter_by(enabled=True).all()
+
+        for schedule in schedules:
+            lamp = db.session.get(LampConfig, schedule.lamp_id)
+
+            if not lamp:
+                continue
+
+            # Перевірка днів
+            days = [day.day_of_week for day in schedule.days]
+            if current_day not in days:
+                continue
+
+            for time_range in schedule.time_ranges:
+                if time_range.start_time <= current_time <= time_range.end_time:
+                    # Часовий діапазон активний
+                    if schedule.last_action != "ON" and not lamp.power_state:
+                        lamp.power_state = True
+                        schedule.last_action = "ON"  # Оновлюємо стан розкладу
+                        db.session.add(LampStats(lamp_id=lamp.id,
+                                                 action="ON", brightness=lamp.brightness))
+                        print(f"Lamp {lamp.id} turned ON at {
+                            current_time} due to schedule {schedule.id}")
+                else:
+                    # Часовий діапазон неактивний
+                    if schedule.last_action != "OFF" and lamp.power_state:
+                        lamp.power_state = False
+                        schedule.last_action = "OFF"  # Оновлюємо стан розкладу
+                        db.session.add(LampStats(lamp_id=lamp.id,
+                                                 action="OFF", brightness=lamp.brightness))
+                        print(f"Lamp {lamp.id} turned OFF at {
+                            current_time} due to schedule {schedule.id}")
+
+                db.session.commit()
+
+
 if __name__ == "__main__":
     with app.app_context():
         db.create_all()
-    app.run(host="localhost", debug=True)
+    scheduler = BackgroundScheduler()
+    if not scheduler.get_jobs():
+        scheduler.add_job(func=check_schedules, trigger="interval",
+                          seconds=10)  # Перевірка кожну хвилину
+    scheduler.start()
+    # Зупинка планувальника при виході
+    atexit.register(lambda: scheduler.shutdown())
+    app.run(host="localhost", debug=True, use_reloader=False)

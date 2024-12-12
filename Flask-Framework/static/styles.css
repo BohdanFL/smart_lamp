@@ -8,18 +8,41 @@ body {
     background-color: #f4f4f4;
     padding-top: 60px;
     overflow: hidden;
+    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    background-color: #f4f4f4;
+    padding-top: 60px;
+    overflow: hidden;
 }
 
 .container {
+    flex-direction:column;
+    justify-content:center;
     text-align: center;
     position: relative;
+}
+
+#manualMode{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+}
+
+.lightResponseContainer{
+    margin-bottom:30px;
 }
 
 .circular-slider {
     position: relative;
     width: 200px;
     height: 200px;
+    pointer-events: auto;
 }
+
 
 .round-button {
     width: 150px;
@@ -40,9 +63,12 @@ body {
     z-index: 2;
     user-select: none;
     -webkit-user-select: none;
+
 }
 
 .round-button.dark {
+    background-color: #333;
+    color: #f0f0f0;
     background-color: #333;
     color: #f0f0f0;
 }
@@ -52,9 +78,21 @@ body {
     border-width: 20px;
     top: 0;
     left: 0;
+    position: absolute;
+    border-width: 20px;
+    top: 0;
+    left: 0;
 }
 
 .slider-thumb {
+    width: 20px;
+    height: 20px;
+    background-color: #666;
+    border-radius: 50%;
+    position: absolute;
+    transform: translate(-50%, -50%);
+    cursor: pointer;
+    z-index: 3;
     width: 20px;
     height: 20px;
     background-color: #666;
@@ -81,10 +119,27 @@ header {
     z-index: 1000; /* Щоб шапка була завжди зверху */
     display: flex;
     justify-content: center;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background-color: rgba(
+        0,
+        0,
+        0,
+        0
+    ); /* Встановлюємо той самий фон, як і в body */
+    padding: 10px 0;
+    z-index: 1000; /* Щоб шапка була завжди зверху */
+    display: flex;
+    justify-content: center;
 }
 
 /* Стилі для вкладок */
 .tabs {
+    display: flex;
+    justify-content: center;
+    margin: 0;
     display: flex;
     justify-content: center;
     margin: 0;
@@ -108,12 +163,17 @@ header {
     color: #fff;
 }
 
+
+
 .tab.active {
+    border-bottom: 2px solid;
+    transition: border-color 0.3s ease; /* Анімація переходу */
     border-bottom: 2px solid;
     transition: border-color 0.3s ease; /* Анімація переходу */
 }
 
 .tab:hover {
+    color: #555;
     color: #555;
 }
 
@@ -125,6 +185,9 @@ header {
 
 /* Основний контейнер контенту (без хедера) */
 .container {
+    display: flex;
+    justify-content: center;
+    padding: 20px;
     display: flex;
     justify-content: center;
     padding: 20px;
@@ -141,7 +204,8 @@ header {
     display: flex;
     justify-content: flex-start;
     align-items: center;
-    margin-bottom: 20px;
+    margin-bottom: 8px;
+    margin-top: 12px;
     padding-left: 30px;
 }
 
@@ -162,7 +226,8 @@ header {
     display: flex;
     justify-content: flex-start;
     align-items: center;
-    margin-bottom: 20px;
+    margin-bottom: 8px;
+    margin-top: 12px;
     padding-left: 30px;
 }
 
@@ -186,6 +251,8 @@ header {
     gap: 50px; /* Відстань між графіками */
     width: 100%; /* Ширина на всю вкладку */
     background-color: #000; /* Чорний фон */
+    border-radius: 10px;
+    overflow: hidden;
 }
 .chart-container canvas {
     background-color: transparent; /* Забезпечення прозорості для графіка */
@@ -193,5 +260,25 @@ header {
 
 .chart-container {
     padding: 20px; /* Відступи всередині контейнера */
-    border-radius: 10px; /* Згладжені кути */
+    width: 70vw;
+    height: 35vh;
 }
+
+@media (max-width: 426px) {
+    .tab {
+        font-size: 14px;
+    }
+    .day-selector,
+    .month-selector {
+        padding-left: 0;
+    }
+}
+
+@media (max-width: 767px) {
+    .chart-container {
+        width: 90vw;
+    }
+}
+
+
+

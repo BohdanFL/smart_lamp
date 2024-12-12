@@ -3,6 +3,8 @@ const Mode = {
     AUTOMATIC: 1,
     SCHEDULE: 2,
 };
+let currentLampId = 1;
+let brightness = 0;
 
 function updateLamp(lamp_id, powerState, brightness, mode, action) {
     fetch(`/lamps/${lamp_id}`, {
@@ -95,10 +97,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     const dayDropdown = document.getElementById("dayDropdown");
 
     const circumference = 2 * Math.PI * 90; // Довжина окружності
-    let brightness = (await getLampDataFromServer()).brightness || 0; // Початкова яскравість
+    brightness = (await getLampDataFromServer()).brightness || 0; // Початкова яскравість
     let dragging = false; // Чи тягне користувач повзунок
     let lastBrightness = brightness; // Останнє значення яскравості
-    let currentLampId = 1;
 
     const today = new Date();
     const currentMonth = today.getMonth() + 1; // Місяці починаються з 0
@@ -163,6 +164,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 
             monthLabel.style.color = "rgb(255,255,255)";
             dayLabel.style.color = "rgb(255,255,255)";
+            [dayDropdown, monthDropdown].forEach((dropdown) => {
+                dropdown.style.color = "white";
+                dropdown.style.background = "black";
+            });
         } else {
             button.style.color = "rgb(255,255,255)";
             manualTab.classList.add("black");
@@ -174,6 +179,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 
             monthLabel.style.color = "rgb(0,0,0)";
             dayLabel.style.color = "rgb(0,0,0)";
+            [dayDropdown, monthDropdown].forEach((dropdown) => {
+                dropdown.style.color = "black";
+                dropdown.style.background = "white";
+            });
         }
 
         // Оновлюємо кольори контейнерів графіків
@@ -446,7 +455,7 @@ async function createChart(selectedMonth = null) {
                 ],
             },
             options: {
-                responsive: true,
+                maintainAspectRatio: false,
                 plugins: {
                     legend: {
                         position: "top",
@@ -602,7 +611,7 @@ async function createDailyChart(selectedDate = null) {
                 ],
             },
             options: {
-                responsive: true,
+                maintainAspectRatio: false,
                 plugins: {
                     legend: {
                         position: "top",

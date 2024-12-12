@@ -1,3 +1,7 @@
+let timerangesCount = 0;
+const addTimerangeBtn = document.getElementById("addTimerangeBtn");
+const timerangeForm = document.getElementById("timerange-form");
+
 async function loadSchedulesFromServer(lamp_id = 1) {
     try {
         const response = await fetch(`/lamps/${lamp_id}/schedules`);
@@ -13,6 +17,7 @@ async function loadSchedulesFromServer(lamp_id = 1) {
 }
 
 async function createScheduleOnServer(lamp_id, name, days, time_ranges) {
+    console.log(lamp_id, name, days, time_ranges);
     try {
         const response = await fetch(`/lamps/${lamp_id}/schedules`, {
             method: "POST",
@@ -64,23 +69,24 @@ async function deleteScheduleOnServer(schedule_id) {
         .catch((error) => console.error("Error:", error));
 }
 
-function createSchedule(
-    schedule_id,
-    scheduleName,
-    startTime,
-    endTime,
-    selectedDays
-) {
+function createSchedule(schedule_id, scheduleName, time_ranges, selectedDays) {
     // Формування назви запису
-    const blockName = scheduleName;
-    const timePeriod = `З: ${startTime} По: ${endTime}`;
+    let timePeriod = "";
+    for (i = 0; i < time_ranges.length; i++) {
+        timePeriod += `З: ${time_ranges[i].start_time} По: ${time_ranges[i].end_time}; `;
+    }
+
     const days = selectedDays.join(", ").toUpperCase();
     // Створення нового елементу запису
     const newListItem = document.createElement("li");
     newListItem.setAttribute("data-id", schedule_id);
     newListItem.innerHTML = `
-            <h3>${blockName}</h3>
+            <h3 id="schedule-header">${scheduleName}</h3>
             <p>${days} | ${timePeriod}</p>
+             <label class="switch">
+                    <input type="checkbox" class="schedule-switch" checked />
+                    <span class="slider round"></span>
+                </label>
             <button class="deleteBtn">Delete</button>
         `;
 
@@ -102,10 +108,19 @@ document.addEventListener("DOMContentLoaded", async function () {
     const addPanel = document.querySelector(".addPanel");
     const addButtonPanel = document.getElementById("addButtonPanel");
     const checkboxGroup = document.querySelector(".checkbox-group");
-    const startTime = document.getElementById("startTime");
-    const endTime = document.getElementById("endTime");
+    const startTime = document.getElementById("startTime0");
+    const endTime = document.getElementById("endTime0");
     const blockNameInput = document.getElementById("blockName");
     const checkboxes = checkboxGroup.querySelectorAll('input[type="checkbox"]');
+
+    // Load Schedules From DB in UI
+    const schedulesData = await loadSchedulesFromServer(1);
+    console.log("schedulesData: ", schedulesData);
+    schedulesData.forEach((schedule) => {
+        const { schedule_id, name, days, time_ranges } = schedule;
+
+        createSchedule(schedule_id, name, time_ranges, days);
+    });
 
     // Placeholder data for test
     blockNameInput.value = "Winter Time";
@@ -115,23 +130,15 @@ document.addEventListener("DOMContentLoaded", async function () {
     startTime.value = "16:00";
     endTime.value = "20:00";
 
-    // Load Schedules From DB in UI
-    const schedulesData = await loadSchedulesFromServer(1);
+    //Timeranges reading
+    let time_ranges = [];
 
-    schedulesData.forEach((schedule) => {
-        const { schedule_id, name, days, time_ranges } = schedule;
-        createSchedule(
-            schedule_id,
-            name,
-            time_ranges[0].start_time,
-            time_ranges[0].end_time,
-            days
-        );
-    });
+    console.log(time_ranges);
 
     // Функція для додавання запису
-    addButton.addEventListener("click", async () => {
+    addButton.addEventListener("click", () => {
         const selectedDays = [];
+        const time_ranges = [];
 
         checkboxes.forEach((checkbox) => {
             if (checkbox.checked) {
@@ -141,33 +148,56 @@ document.addEventListener("DOMContentLoaded", async function () {
             }
         });
 
-        // Перевірка на порожні поля
-        if (
-            selectedDays.length === 0 ||
-            startTime.value === "" ||
-            endTime.value === "" ||
-            blockNameInput.value === ""
-        ) {
-            alert(
-                "Будь ласка, заповніть усі поля та виберіть хоча б один день."
-            );
-            return;
+        let timeRangesStartTimes = document.querySelectorAll(".startTime");
+        let timeRangesEndTimes = document.querySelectorAll(".endTime");
+
+        for (i = 0; i <= timerangesCount; i++) {
+            elStart = timeRangesStartTimes[i];
+            elEnd = timeRangesEndTimes[i];
+
+            timerangeObj = {
+                start_time: elStart.value,
+                end_time: elEnd.value,
+            };
+
+            time_ranges.push(timerangeObj);
         }
 
-        const schedule_id = await createScheduleOnServer(
+        //Time checking (FROM time must be less than TO)
+        for (i = 0; i < time_ranges.length; i++) {
+            if (time_ranges[i].start_time > time_ranges[i].end_time) {
+                alert("The time FROM should be less than the time TO");
+                return;
+            }
+
+            if (
+                time_ranges[i].start_time === "" ||
+                time_ranges[i].end_time === ""
+            ) {
+                alert("Please fill in all the timeranges.");
+                return;
+            }
+        }
+
+        // Перевірка на порожні поля
+        if (selectedDays.length === 0 || blockNameInput.value === "") {
+            alert("Please, fill in all fields and select the day.");
+            return;
+        }
+        console.log(time_ranges);
+        createScheduleOnServer(
             1,
             blockNameInput.value,
             selectedDays,
-            [{ start_time: startTime.value, end_time: endTime.value }]
-        );
-
-        createSchedule(
-            schedule_id,
-            blockNameInput.value,
-            startTime.value,
-            endTime.value,
-            selectedDays
-        );
+            time_ranges
+        ).then((schedule_id) => {
+            createSchedule(
+                schedule_id,
+                blockNameInput.value,
+                time_ranges,
+                selectedDays
+            );
+        });
 
         // Очищення полів після додавання
         // blockNameInput.value = "";
@@ -176,14 +206,6 @@ document.addEventListener("DOMContentLoaded", async function () {
         // checkboxes.forEach((checkbox) => {
         //     checkbox.checked = false;
         // });
-
-        // Placeholder data for test
-        blockNameInput.value = "Winter Time";
-        checkboxes.forEach((checkbox) => {
-            checkbox.checked = true;
-        });
-        startTime.value = "16:00";
-        endTime.value = "20:00";
 
         // Закриття панелі
         addPanel.style.display = "none";
@@ -200,5 +222,62 @@ document.addEventListener("DOMContentLoaded", async function () {
     addButtonPanel.addEventListener("click", () => {
         addPanel.style.display = "block"; // Відкриваємо панель
         addButtonPanel.style.display = "none"; // Сховати кнопку Add
+    });
+});
+
+// Timeranges frontend
+
+addTimerangeBtn.addEventListener("click", () => {
+    timerangesCount++;
+
+    // Створення нового блоку часового проміжку
+    const element = document.createElement("div");
+    element.classList.add("timeranges-group");
+    element.innerHTML = `
+        <div class="form-group">
+            <label for="startTime${timerangesCount}">From:</label>
+            <input type="time" id="startTime${timerangesCount}" class="startTime input" />
+        </div>
+        <div class="form-group">
+            <label for="endTime${timerangesCount}">To:</label>
+            <input type="time" id="endTime${timerangesCount}" class="endTime input" />
+        </div>
+        <button class="deleteTimerangeBtn btn">Delete</button>
+    `;
+
+    // Додаємо новий блок до форми
+    timerangeForm.appendChild(element);
+
+    // Додаємо слухач події для кнопки видалення
+    const deleteButton = element.querySelector(".deleteTimerangeBtn");
+    deleteButton.addEventListener("click", () => {
+        element.remove(); // Видаляє блок із форми
+        timerangesCount--;
+    });
+});
+
+document.addEventListener("DOMContentLoaded", function () {
+    const lightResponseSwitch = document.getElementById("lightResponseSwitch");
+    const scheduleList = document.getElementById("scheduleList");
+
+    if (!scheduleList) {
+        console.error("scheduleList element not found");
+        return;
+    }
+
+    // Light Response Mode обробник
+    lightResponseSwitch.addEventListener("change", function () {
+        const isEnabled = this.checked;
+
+        const { powerState } = getLampState(brightness);
+        const action = isEnabled ? "automatic_on" : "automatic_off";
+        const currentMode = isEnabled ? Mode.AUTOMATIC : Mode.MANUAL;
+        updateLamp(currentLampId, powerState, brightness, currentMode, action);
+        addStatsToDB(currentLampId, action, brightness);
+
+        // Керуємо станом Circular Slider
+        const circularSlider = document.querySelector(".circular-slider");
+        circularSlider.classList.toggle("disabled");
+        scheduleList.classList.toggle("disabled");
     });
 });

@@ -20,29 +20,41 @@
 
         <div class="container">
             <!-- Контент для Manual режиму -->
-            <div id="manualMode" class="circular-slider">
-                <svg class="slider-ring" width="200" height="200">
-                    <circle
-                        cx="100"
-                        cy="100"
-                        r="90"
-                        fill="none"
-                        stroke="#ddd"
-                        stroke-width="10"></circle>
-                    <circle
-                        id="progressCircle"
-                        cx="100"
-                        cy="100"
-                        r="90"
-                        fill="none"
-                        stroke="#666"
-                        stroke-width="10"
-                        stroke-dasharray="565.48"
-                        stroke-dashoffset="565.48"
-                        transform="rotate(-90, 100, 100)"></circle>
-                </svg>
-                <button id="toggleButton" class="round-button">50%</button>
-                <div id="sliderThumb" class="slider-thumb"></div>
+
+            <div id="manualMode">
+                <!-- Доданий Автоматичний режим -->
+                <div class="toggle-container lightResponseContainer">
+                    <label class="switch">
+                        <input type="checkbox" id="lightResponseSwitch" />
+                        <span class="slider round"></span>
+                    </label>
+                    <h3>Light response mode</h3>
+                </div>
+
+                <div class="circular-slider">
+                    <svg class="slider-ring" width="200" height="200">
+                        <circle
+                            cx="100"
+                            cy="100"
+                            r="90"
+                            fill="none"
+                            stroke="#ddd"
+                            stroke-width="10"></circle>
+                        <circle
+                            id="progressCircle"
+                            cx="100"
+                            cy="100"
+                            r="90"
+                            fill="none"
+                            stroke="#666"
+                            stroke-width="10"
+                            stroke-dasharray="565.48"
+                            stroke-dashoffset="565.48"
+                            transform="rotate(-90, 100, 100)"></circle>
+                    </svg>
+                    <button id="toggleButton" class="round-button">50%</button>
+                    <div id="sliderThumb" class="slider-thumb"></div>
+                </div>
             </div>
 
             <!-- Контент для Programmatic режиму -->
@@ -50,18 +62,16 @@
                 id="programmaticMode"
                 class="programmatic-mode"
                 style="display: none">
-                <!-- Програмний режим (поки що порожній) -->
-
                 <div class="schedule_container">
-                    <h1>Налаштування часу</h1>
+                    <h1>Schedule</h1>
 
                     <button id="addButtonPanel" class="btn">Add</button>
 
                     <!-- Панель додавання нового запису -->
                     <div class="addPanel">
-                        <h2>Додати новий запис</h2>
+                        <h2>Add a new schedule</h2>
                         <div class="form-group">
-                            <label for="blockName">Назва блоку:</label>
+                            <label for="blockName">Name of the block</label>
                             <input type="text" id="blockName" class="input" />
                         </div>
 
@@ -109,16 +119,29 @@
                                     data-day="sunday"></span>
                             </label>
                         </div>
+                        <div class="timeranges-group">
+                            <div class="form-group">
+                                <label for="startTime0">З:</label>
+                                <input
+                                    type="time"
+                                    id="startTime0"
+                                    class="input startTime" />
+                            </div>
 
-                        <div class="form-group">
-                            <label for="startTime">З:</label>
-                            <input type="time" id="startTime" class="input" />
+                            <div class="form-group">
+                                <label for="endTime0">По:</label>
+                                <input
+                                    type="time"
+                                    id="endTime0"
+                                    class="input endTime" />
+                            </div>
                         </div>
 
-                        <div class="form-group">
-                            <label for="endTime">По:</label>
-                            <input type="time" id="endTime" class="input" />
-                        </div>
+                        <div id="timerange-form"></div>
+
+                        <button id="addTimerangeBtn" class="btn timerangeBtn">
+                            Add Timerange
+                        </button>
 
                         <button id="addButton" class="btn">Confirm</button>
                         <button class="cancelBtn">Cancel</button>
@@ -126,7 +149,7 @@
 
                     <!-- Панель зі списком записів -->
                     <div class="schedule">
-                        <h2>Записи:</h2>
+                        <h2>Records:</h2>
                         <ul id="scheduleList"></ul>
                     </div>
                 </div>
@@ -149,10 +172,7 @@
                 <!-- Графік для поточного дня -->
                 <div class="charts-container">
                     <div class="chart-container">
-                        <canvas
-                            id="dailyEnergyChart"
-                            width="400"
-                            height="200"></canvas>
+                        <canvas id="dailyEnergyChart"></canvas>
                     </div>
                 </div>
 
@@ -178,14 +198,23 @@
                 <!-- Графік -->
                 <div class="charts-container">
                     <div class="chart-container">
-                        <canvas
-                            id="energyChart"
-                            width="400"
-                            height="200"></canvas>
+                        <canvas id="energyChart"></canvas>
                     </div>
                 </div>
             </div>
 
+            <div
+                id="statisticMode"
+                class="statistic-mode"
+                style="display: none">
+                <!-- Статистичний режим (поки що порожній) -->
+            </div>
+        </div>
+        <!-- Chart.js підключення -->
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script src="../static/script.js"></script>
+        <script src="../static/schedule_script.js"></script>
+    </body>
             <div
                 id="statisticMode"
                 class="statistic-mode"

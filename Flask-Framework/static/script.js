@@ -95,11 +95,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     const chartContainers = document.querySelectorAll(".chart-container"); // Вибір усіх контейнерів графіків
     const monthDropdown = document.getElementById("monthDropdown");
     const dayDropdown = document.getElementById("dayDropdown");
-
     const circumference = 2 * Math.PI * 90; // Довжина окружності
     brightness = (await getLampDataFromServer()).brightness || 0; // Початкова яскравість
     let dragging = false; // Чи тягне користувач повзунок
     let lastBrightness = brightness; // Останнє значення яскравості
+    let lastUserBrightness = brightness;
 
     const today = new Date();
     const currentMonth = today.getMonth() + 1; // Місяці починаються з 0
@@ -140,6 +140,9 @@ document.addEventListener("DOMContentLoaded", async () => {
         programmaticTab.style.borderBottomColor = textColor;
         statisticTab.style.borderBottomColor = textColor;
     }
+    const lightResponseLabel = document.querySelector(
+        "label[for=lightResponseSwitch]"
+    );
 
     // Оновлюємо кольори, коли відбувається будь-яке оновлення
     function updateColors() {
@@ -162,6 +165,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             programmaticTab.classList.remove("black");
             statisticTab.classList.remove("black");
 
+            lightResponseLabel.style.color = "white";
             monthLabel.style.color = "rgb(255,255,255)";
             dayLabel.style.color = "rgb(255,255,255)";
             [dayDropdown, monthDropdown].forEach((dropdown) => {
@@ -177,6 +181,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             programmaticTab.classList.remove("white");
             statisticTab.classList.remove("white");
 
+            lightResponseLabel.style.color = "black";
             monthLabel.style.color = "rgb(0,0,0)";
             dayLabel.style.color = "rgb(0,0,0)";
             [dayDropdown, monthDropdown].forEach((dropdown) => {
@@ -289,10 +294,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     // Обробник події для кнопки
     button.addEventListener("click", () => {
         if (brightness === 0) {
-            // Якщо кнопка в режимі "OFF", переключаємо на "ON" і встановлюємо яскравість на 100
-            brightness = 100;
+            // Якщо кнопка в режимі "OFF", переключаємо на "ON" і встановлюємо останню яскравість
+            brightness = lastUserBrightness;
         } else {
             // Якщо кнопка в режимі "ON", переключаємо на "OFF" і скидаємо яскравість на 0
+            lastUserBrightness = brightness; // Зберігаємо поточну яскравість
             brightness = 0;
         }
         updateColors(); // Оновлюємо кольори кнопки та фону
@@ -316,7 +322,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     manualTab.addEventListener("click", () => {
         resetActiveTabs(); // Скидаємо активний стан
         manualTab.classList.add("active"); // Додаємо активний стан на Manual
-        manualMode.style.display = "block"; // Показуємо контент Manual
+        manualMode.style.display = "flex"; // Показуємо контент Manual
         programmaticMode.style.display = "none"; // Ховаємо інші
         statisticMode.style.display = "none";
         updateColors();
@@ -326,7 +332,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         resetActiveTabs(); // Скидаємо активний стан
         programmaticTab.classList.add("active"); // Додаємо активний стан на Programmatic
         manualMode.style.display = "none"; // Ховаємо інші
-        programmaticMode.style.display = "block"; // Показуємо контент Programmatic
+        programmaticMode.style.display = "flex"; // Показуємо контент Programmatic
         statisticMode.style.display = "none";
         updateColors();
     });
@@ -336,7 +342,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         statisticTab.classList.add("active"); // Додаємо активний стан на Statistic
         manualMode.style.display = "none"; // Ховаємо інші
         programmaticMode.style.display = "none";
-        statisticMode.style.display = "block"; // Показуємо контент Statistic
+        statisticMode.style.display = "flex"; // Показуємо контент Statistic
         updateColors();
 
         populateMonthDropdown(); // Створюємо меню місяців
@@ -406,7 +412,7 @@ async function createChart(selectedMonth = null) {
                     entry.time.minute
                 );
                 const durationInMinutes =
-                    (turnOffTime - lastActionTime) / (1000 * 60); // Тривалість у хвилинах
+                    (turnOffTime - lastActionTime) / (1000 * 60 * 0.06 * 1000); // Тривалість у хвилинах
                 timePerDay[dayKey] += durationInMinutes; // Додаємо тривалість до відповідного дня
                 lastActionTime = null; // Скидаємо час останнього ввімкнення
             }
@@ -465,7 +471,7 @@ async function createChart(selectedMonth = null) {
                 scales: {
                     x: { title: { display: true, text: "Date" } },
                     y: {
-                        title: { display: true, text: "Energy (kWh)" },
+                        title: { display: true, text: "Energy (mW*h)" },
                         beginAtZero: true,
                     },
                 },
@@ -556,7 +562,7 @@ async function createDailyChart(selectedDate = null) {
 
                 // Обчислення тривалості в годинах
                 const durationInMinutes =
-                    (turnOffTime - lastActionTime) / (1000 * 60); // тривалість у хвилинах
+                    (turnOffTime - lastActionTime) / (1000 * 60 * 0.06 * 1000); // тривалість у хвилинах
                 const startHour = lastActionTime.getHours();
                 const endHour = turnOffTime.getHours();
 
@@ -621,7 +627,7 @@ async function createDailyChart(selectedDate = null) {
                 scales: {
                     x: { title: { display: true, text: "Time (hours)" } },
                     y: {
-                        title: { display: true, text: "Energy (kWh)" },
+                        title: { display: true, text: "Energy (mW*h)" },
                         beginAtZero: true,
                     },
                 },
